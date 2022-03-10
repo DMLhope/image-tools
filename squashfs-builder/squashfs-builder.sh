@@ -1,17 +1,6 @@
 #!/usr/bin/env bash
 
 set -xe
-# 确认环境
-
-# 基于debootstrap拉取文件系统
-
-# 挂载必要目录
-
-# 安装需要软件并进行其他操作(hooks)
-
-# 卸载对应目录
-
-# 打包squashfs
 
 codename=""
 chroot_path="/tmp/build_chroot"
@@ -48,7 +37,18 @@ mount_dir(){
 }
 
 do_inchroot(){
-    if [ -f ./hooks.sh ];then
+    if [ ! -d ./hooks ];then
+        echo "nothing to do in chroot"
+        return 0
+    fi
+
+    if [ -d ./hooks/hooks-data ];then
+        echo "start copy data to chroot"
+        cp -rv ./hooks-data "$chroot_path" 
+    else
+        echo "nothing copy to chroot"
+    fi
+    if [ -f ./hooks/hooks.sh ];then
         echo "start do in chroot"
         chroot "$chroot_path" ./hooks.sh 
     else
