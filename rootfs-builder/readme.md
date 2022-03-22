@@ -25,5 +25,8 @@ hooks目录中可以放
 ## Example
 
 ```bash
+# x86_64 debian
 sudo ./rootfs-builder.sh stable http://deb.debian.org/debian/
+# mips v15
+sudo ./rootfs-builder.sh camel http://packages.deepin.com/deepin/
 ```
