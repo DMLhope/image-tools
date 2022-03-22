@@ -74,7 +74,9 @@ do_inchroot(){
     fi
     if [ -f ./hooks/hooks.sh ];then
         echo "start do in chroot"
-        chroot "$chroot_path" ./hooks/hooks.sh 
+        cp -v ./hooks/hooks.sh "$chroot_path"/
+        chmod a+x "$chroot_path"/hooks.sh
+        chroot "$chroot_path" /hooks.sh 
     else
         echo "do nothing in chroot"
     fi
