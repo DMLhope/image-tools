@@ -68,13 +68,13 @@ do_inchroot(){
 
     if [ -d ./hooks/hooks-data ];then
         echo "start copy data to chroot"
-        cp -rv ./hooks-data "$chroot_path" 
+        cp -rv ./hooks/hooks-data "$chroot_path" 
     else
         echo "nothing copy to chroot"
     fi
     if [ -f ./hooks/hooks.sh ];then
         echo "start do in chroot"
-        chroot "$chroot_path" ./hooks.sh 
+        chroot "$chroot_path" ./hooks/hooks.sh 
     else
         echo "do nothing in chroot"
     fi
