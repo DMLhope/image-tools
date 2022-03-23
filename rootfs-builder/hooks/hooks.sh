@@ -5,7 +5,7 @@ add_repo(){
   apt update
 }
 install_pkg(){
-  apt install -y grub-common initramfs-tools-core live-tools parted  gcc g++ sudo 
+  apt install -y grub-common initramfs-tools-core live-tools parted  gcc g++ sudo isc-dhcp-client
   apt install -y linux-headers-3.10.0-mips64-core-947=3.10.0-1005 linux-image-3.10.0-mips64-core-947=3.10.0-1005 \
           default-jdk openssh-server openssh-client sqlite vsftpd mariadb-common  mariadb-server mariadb-client  
 }
@@ -23,6 +23,12 @@ copy_bootcfg(){
           cp -v /hooks-data/boot.cfg /boot/
   fi
 }
+copy_update_grub(){
+  if [ -f /hooks-data/update-grub ];then
+          cp -v /hooks-data/update-grub /usr/sbin/
+  fi
+}
+c
 change_root_passwd(){
   echo root:a\$|chpasswd
 }
