@@ -5,7 +5,7 @@ add_repo(){
   apt update
 }
 install_pkg(){
-  apt install -y grub-common initramfs-tools-core live-tools parted  gcc g++ sudo isc-dhcp-client
+  apt install -y grub-common initramfs-tools-core openssl pciutils vim live-tools parted  gcc g++ sudo isc-dhcp-client
   apt install -y linux-headers-3.10.0-mips64-core-947=3.10.0-1005 linux-image-3.10.0-mips64-core-947=3.10.0-1005 \
           default-jdk openssh-server openssh-client sqlite vsftpd mariadb-common  mariadb-server mariadb-client  
 }
@@ -32,6 +32,11 @@ c
 change_root_passwd(){
   echo root:a |chpasswd
 }
+add_user(){
+  useradd -m -G sudo -s  /bin/bash -p "$(openssl passwd -1 123)" deepin
+}
+
+
 main(){
   add_repo
   install_pkg
@@ -39,6 +44,7 @@ main(){
   copy_grubconf
   copy_bootcfg
   change_root_passwd
+  add_user
 }
 
 main

@@ -93,6 +93,7 @@ umount_dir(){
 mk_squashfs(){
     mksquashfs "$chroot_path" ./filesystem.squashfs
 }
+
 main(){
     user_check
     opts_check "$@"
