@@ -1,1 +1,3 @@
 *.img
+*.squashfs
+rootfs.img.tar.gz
