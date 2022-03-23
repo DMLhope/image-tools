@@ -30,7 +30,7 @@ copy_update_grub(){
 }
 c
 change_root_passwd(){
-  echo root:a\$|chpasswd
+  echo root:a |chpasswd
 }
 main(){
   add_repo
