@@ -26,6 +26,7 @@ un_squashfs(){
 copy_rootfs(){
     if [ -d ./squashfs-root ]; then
         cp --sparse=always "$rootfs_path" ./squashfs-root/rootfs.img
+        sync
     fi
 }
 
@@ -41,10 +42,11 @@ mk_binary(){
     if [ -d ./include.binary ];then
         rsync -avPh ./include.binary/ ./binary/
         mkdir -p ./binary/live
-        cp -v ./squashfs-root/initrd* ./binary/initrd.img
-        cp -v ./squashfs-root/vmlinu* ./binary/vmlinuz
+        cp -v ./squashfs-root/boot/initrd* ./binary/boot/initrd.img
+        cp -v ./squashfs-root/boot/vmlinu* ./binary/boot/vmlinuz
         mksquashfs ./squashfs-root ./filesystem.squashfs-new
         cp -v ./filesystem.squashfs-new ./binary/live/filesystem.squashfs
+        sync
     fi 
 }
 
