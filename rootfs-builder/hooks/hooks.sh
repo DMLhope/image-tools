@@ -7,7 +7,8 @@ add_repo(){
 install_pkg(){
   apt install -y grub-common initramfs-tools-core openssl pciutils vim live-tools parted  gcc g++ sudo isc-dhcp-client
   apt install -y linux-headers-3.10.0-mips64-core-947=3.10.0-1005 linux-image-3.10.0-mips64-core-947=3.10.0-1005 \
-          default-jdk openssh-server openssh-client sqlite vsftpd mariadb-common  mariadb-server mariadb-client  
+          default-jdk openssh-server live-boot live-boot-initramfs-tools \
+          openssh-client sqlite vsftpd ftp mariadb-common  mariadb-server mariadb-client ifenslave 
 }
 update_fstab(){
 echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM
@@ -28,7 +29,7 @@ copy_update_grub(){
           cp -v /hooks-data/update-grub /usr/sbin/
   fi
 }
-c
+
 change_root_passwd(){
   echo root:a |chpasswd
 }
