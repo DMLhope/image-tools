@@ -6,15 +6,17 @@ codename=""
 chroot_path="/tmp/build_chroot"
 repo_url=""
 img_size="4096"
+time_flag=$(date +%Y%m%d%H%M%S)
+rootfs_name="root-""$time_flag"".img"
 
 mkrootfs_img(){
-    dd if=/dev/zero of=./rootfs.img bs=1M count=0 seek="$img_size"
-    parted -s ./rootfs.img mklabel msdos mkpart primary ext3 0% 100%
+    dd if=/dev/zero of=./"$rootfs_name" bs=1M count=0 seek="$img_size"
+    parted -s ./"$rootfs_name" mklabel msdos mkpart primary ext3 0% 100%
 }
 
 mount_rootfs(){
-    losetup -fP ./rootfs.img
-    devicepart_path=$(losetup -l |grep rootfs.img|awk '{print $1}')p1
+    losetup -fP ./"$rootfs_name"
+    devicepart_path=$(losetup -l |grep "$rootfs_name"|awk '{print $1}')p1
     mkfs.ext3 "$devicepart_path"
     if [ -b "$devicepart_path" ];then
         [ ! -d $chroot_path ] && mkdir $chroot_path
@@ -27,7 +29,7 @@ mount_rootfs(){
 
 umount_rootfs(){
     umount $chroot_path
-    device_path=$(losetup -l |grep rootfs.img|awk '{print $1}')
+    device_path=$(losetup -l |grep "$rootfs_name"|awk '{print $1}')
     losetup -d "$device_path"
 }
 
@@ -68,13 +70,15 @@ do_inchroot(){
 
     if [ -d ./hooks/hooks-data ];then
         echo "start copy data to chroot"
-        cp -rv ./hooks-data "$chroot_path" 
+        cp -rv ./hooks/hooks-data "$chroot_path" 
     else
         echo "nothing copy to chroot"
     fi
     if [ -f ./hooks/hooks.sh ];then
         echo "start do in chroot"
-        chroot "$chroot_path" ./hooks.sh 
+        cp -v ./hooks/hooks.sh "$chroot_path"/
+        chmod a+x "$chroot_path"/hooks.sh
+        chroot "$chroot_path" /hooks.sh 
     else
         echo "do nothing in chroot"
     fi
@@ -89,6 +93,7 @@ umount_dir(){
 mk_squashfs(){
     mksquashfs "$chroot_path" ./filesystem.squashfs
 }
+
 main(){
     user_check
     opts_check "$@"
