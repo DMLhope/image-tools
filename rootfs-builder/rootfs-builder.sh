@@ -2,9 +2,9 @@
 
 set -xe
 
-codename=""
+codename="fou"
+repo_url="https://pools.uniontech.com/server-enterprise/"
 chroot_path="/tmp/build_chroot"
-repo_url=""
 img_size="4096"
 time_flag=$(date +%Y%m%d%H%M%S)
 rootfs_name="root-""$time_flag"".img"
@@ -57,7 +57,8 @@ chroot_build(){
 }
 
 mount_dir(){
-    mount --bind /dev "$chroot_path"/dev
+    mount -t devtmpfs udev "$chroot_path"/dev
+    mount -t devpts devpts "$chroot_path"/dev/pts
     mount -t sysfs sys "$chroot_path"/sys
     mount -t proc proc "$chroot_path"/proc
 }
@@ -79,12 +80,14 @@ do_inchroot(){
         cp -v ./hooks/hooks.sh "$chroot_path"/
         chmod a+x "$chroot_path"/hooks.sh
         chroot "$chroot_path" /hooks.sh 
+        rm "$chroot_path"/hooks.sh
     else
         echo "do nothing in chroot"
     fi
 }
 
 umount_dir(){
+    umount "$chroot_path"/dev/pts
     umount "$chroot_path"/dev
     umount "$chroot_path"/sys
     umount "$chroot_path"/proc
@@ -96,9 +99,9 @@ mk_squashfs(){
 
 main(){
     user_check
-    opts_check "$@"
-    codename="$1"
-    repo_url="$2"
+    # opts_check "$@"
+    # codename="$1"
+    # repo_url="$2"
     echo "codename:" "$codename", "repo_url: " "$repo_url"
     mkrootfs_img
     mount_rootfs

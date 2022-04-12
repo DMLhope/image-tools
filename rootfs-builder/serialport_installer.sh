@@ -187,32 +187,7 @@ echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM
 	fi
 }
 
-update_vsftpd(){
-	if [ ! -f "$chroot_path"/etc/vsftpd.conf ];then
-		echo "no vsftpd conf to update"
-		return 1
-	else
-		sed -i '/local_root=/d' "$chroot_path"/etc/vsftpd.conf
 
-		echo "local_root=/work/" >> "$chroot_path"/etc/vsftpd.conf
-
-		sed -i "s|xferlog_enable=.*|#xferlog_enable=YES|g" "$chroot_path"/etc/vsftpd.conf
-	fi
-}
-
-update_bashrc(){
-	echo "if ! shopt -oq posix; then
-  if [ -f /usr/share/bash-completion/bash_completion ]; then
-    . /usr/share/bash-completion/bash_completion
-  elif [ -f /etc/bash_completion ]; then
-    . /etc/bash_completion
-  fi
-fi" >> "$chroot_path"/root/.bashrc
-}
-
-update_vimrc(){
-	echo "set viminfo='50,<1000,s100,:0,n~/work/.viminfo'" >>  "$chroot_path"/root/.vimrc
-}
 
 user_check(){
     
@@ -261,15 +236,9 @@ update_ssh
 
 update_fstab
 
-update_vsftpd	
-
-update_bashrc
-
-update_vimrc
-
 do_hooks
 
-choice_tty
+# choice_tty
 
 umount_disk "$disk_path"
 
