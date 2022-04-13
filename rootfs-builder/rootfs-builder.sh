@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 set -xe
 
 codename=""
@@ -68,12 +67,21 @@ do_inchroot(){
         return 0
     fi
 
+    if [ -d ./hooks/package.list ];then
+        echo "start copy package.list to chroot"
+        cp -rv ./hooks/package.list "$chroot_path" 
+    else
+        echo "no package.list copy to chroot"
+    fi
+    
+
     if [ -d ./hooks/hooks-data ];then
         echo "start copy data to chroot"
         cp -rv ./hooks/hooks-data "$chroot_path" 
     else
         echo "nothing copy to chroot"
     fi
+
     if [ -f ./hooks/hooks.sh ];then
         echo "start do in chroot"
         cp -v ./hooks/hooks.sh "$chroot_path"/
