@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -xe
 
-codename="fou"
+codename="fou/1040"
 repo_url="https://pools.uniontech.com/server-enterprise/"
 chroot_path="/tmp/build_chroot"
 img_size="4096"
