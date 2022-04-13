@@ -5,10 +5,14 @@ add_repo(){
   apt update
 }
 install_pkg(){
-  apt install -y grub-common initramfs-tools-core openssl pciutils vim live-tools parted  gcc g++ sudo isc-dhcp-client ethtool
-  apt install -y linux-headers-4.19.0-mips64-core-806 linux-image-4.19.0-mips64-core-806 \
-          openssh-server live-boot live-boot-initramfs-tools libgl1 libpng16-16 libharfbuzz0b  \
-          openssh-client  ifenslave  overlayroot libfontconfig1 libqt5gui5 xorg xserver-xorg-video-loongson libqt5xml5 xinit
+  apt install -yq grub-common initramfs-tools-core live-boot \
+      live-boot-initramfs-tools openssl pciutils vim live-tools parted gcc g++ sudo
+  if [ -f /package.list/extra_deb.list ] && [ -f /package.list/kernel.list ] ;then
+    xargs --arg-file=/kernel.list apt-get -yq install
+    xargs --arg-file=/extra_deb.list apt-get -yq install
+  else
+    echo "no package will install"
+  fi
 }
 update_fstab(){
 echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM

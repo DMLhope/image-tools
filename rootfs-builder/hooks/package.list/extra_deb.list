@@ -1,0 +1,12 @@
+overlayroot
+libfontconfig1
+libqt5gui5
+qt5-default
+xorg
+xserver-xorg-video-loongson 
+libqt5xml5 
+xinit
+openssh-server
+openssh-client
+isc-dhcp-client
+ethtool
