@@ -6,9 +6,14 @@ export LANGUAGE="en_US"
 
 disk_path=""
 chroot_path="/mnt"
+# 控制日志等级
+echo "4 4 1 7" > /proc/sys/kernel/printk
 
 umount_disk(){
-	 df |grep "$1" |awk '{print  $1}' |xargs umount -l
+	df |grep "$1" |awk '{print  $1}' |xargs umount -l
+	# 另一种方法
+	# echo "umount disk" "$1"
+	# umount "$1"* &>/dev/null
 }
 
 findRootfs(){
@@ -32,8 +37,9 @@ else
 	fi	
 fi
 umount_disk "$disk_path"
+echo "Install OS, please wait..."
 ddRootfs "$rootfs_path" "$disk_path"
-echo "Please wait..."
+echo "dd done"
 }
 
 ddRootfs(){
@@ -48,13 +54,37 @@ ddRootfs(){
 	#	# sleep 1
 	#done
 	echo "start dd"
-	dd if="$rootfs_path" of="$disk_path" bs=1M 
-	echo 3 >  /proc/sys/vm/drop_caches
+	# the code from shijiayu
+	if mount | awk '{print $3, $5}' | grep -sq '^/ nfs'; then
+        echo "in_nfs"
+        file_size=$(stat -c %s "$rootfs_path")
+        dd_once_size=$((1024*1024*100))
+        last_block_start=$((file_size-dd_once_size))
+        for ((i=0;i<="$file_size";i+="$dd_once_size")) {
+            COUNT=""
+            if [ $i -le $last_block_start ];then
+                COUNT="count=100"
+            fi
+            ((dd_start=i/(1024*1024)))
+            dd if="$rootfs_path" of="$disk_path" bs=1M seek=$dd_start skip=$dd_start  $COUNT &> /dev/null
+            echo 3 > /proc/sys/vm/drop_caches &> /dev/null
+        }
+    else
+        echo "local install"
+        dd if="$rootfs_path" of="$disk_path" bs=1M &> /dev/null
+    fi
+	sync
+    partprobe
+    sleep 2
+	# 防自动挂载
+	umount_disk "$disk_path"
+
 	echo "done"
 }
 
 updateDisk(){
 	echo "Update disk part..."
+
 	part1_end=$(parted "$1"1 unit mb print |grep "Disk ${1}1"|awk '{print $3}'| sed "s|MB||g")
 	part2_start=$(("$part1_end + 1"))
 	part2_end=$(("$part2_start + 2048"))
@@ -67,36 +97,38 @@ updateDisk(){
 	mkfs.ext4  "$1"3
 	#e2fsck -f "$1"
 	#e2fsck -yf "$1"2
+	
+	# 防自动挂载
+	sync
+    partprobe
+    sleep 2
+    umount_disk "$disk_path"
 }
 
 
 mount_disk(){
 	echo "mount disk" "$1"
-	mount "$1"1 /mnt
+	mount "$1"1 $chroot_path
 }
 
-umount_disk(){
-	echo "umount disk" "$1"
-	umount "$1"1
-}
 
-# updateUuid(){
-# 	echo "Update UUID ..."
-# 	tune2fs -U 46c9df11-afc8-452a-855a-3d11b8ff1d31 "$1"1
-# }
+
 
 mount_dir(){
-    mount --bind /dev "$chroot_path"/dev
+    mount -t devtmpfs udev "$chroot_path"/dev
+    mount -t devpts devpts "$chroot_path"/dev/pts
     mount -t sysfs sys "$chroot_path"/sys
     mount -t proc proc "$chroot_path"/proc
 }
 
 umount_dir(){
+	umount "$chroot_path"/dev/pts
     umount "$chroot_path"/dev
     umount "$chroot_path"/sys
     umount "$chroot_path"/proc
 }
 
+# 此为后门暂不可用
 do_hooks(){
 	if [ -d ./hooks ];then
 		cp -rv ./hooks /mnt/
@@ -187,8 +219,6 @@ echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM
 	fi
 }
 
-
-
 user_check(){
     
     if [ "$USER" != "root" ];then
@@ -236,7 +266,7 @@ update_ssh
 
 update_fstab
 
-do_hooks
+# do_hooks
 
 # choice_tty
 
