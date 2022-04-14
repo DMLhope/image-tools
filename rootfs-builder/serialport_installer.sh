@@ -128,7 +128,7 @@ umount_dir(){
     umount "$chroot_path"/proc
 }
 
-# 此为后门暂不可用
+# 此为安装用后门暂不可用会和制作rootfs脚本冲突，后期再考虑开启的事情
 do_hooks(){
 	if [ -d ./hooks ];then
 		cp -rv ./hooks /mnt/
