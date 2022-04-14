@@ -42,6 +42,9 @@ mk_binary(){
     if [ -d ./include.binary ];then
         rsync -avPh ./include.binary/ ./binary/
         mkdir -p ./binary/live
+        if [ -f ./squashfs-root/boot/initrd.img-4.19.0-mips64-server ];then
+            rm -rf ./squashfs-root/boot/initrd.img-4.19.0-mips64-server
+        fi
         cp -v ./squashfs-root/boot/initrd* ./binary/boot/initrd.img
         cp -v ./squashfs-root/boot/vmlinu* ./binary/boot/vmlinuz
         mksquashfs ./squashfs-root ./binary/live/filesystem.squashfs
