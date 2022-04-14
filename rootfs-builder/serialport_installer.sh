@@ -10,10 +10,10 @@ chroot_path="/mnt"
 echo "4 4 1 7" > /proc/sys/kernel/printk
 
 umount_disk(){
-	df |grep "$1" |awk '{print  $1}' |xargs umount -l
+	# df |grep "$1" |awk '{print  $1}' |xargs umount -l
 	# 另一种方法
-	# echo "umount disk" "$1"
-	# umount "$1"* &>/dev/null
+	echo "umount disk" "$1"
+	umount "$1"* &>/dev/null
 }
 
 findRootfs(){
