@@ -10,9 +10,6 @@ openssh-server
 openssh-client
 isc-dhcp-client
 ethtool
-tmux
 locales
 fonts-cesi-kt
-fonts-cesi-fs
-fonts-cesi-ht
 fonts-noto
