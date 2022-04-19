@@ -1,0 +1,19 @@
+[  {
+        "filesystem": "recovery",
+        "mountPoint": "/recovery",
+        "label": "Backup",
+        "usage": "backup-size",
+        "alignStart": false,
+        "device": "",
+        "platform": [ "x86", "sw", "loongson", "arm" ]
+    },
+    {
+        "filesystem": "ext4",
+        "mountPoint": "/",
+        "label": "Roota",
+        "usage": "100%",
+        "alignStart": true,
+        "device": "",
+        "platform": [ "x86", "sw", "loongson", "arm" ]
+    }
+]
