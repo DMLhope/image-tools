@@ -2,8 +2,9 @@
 #代码参考deepin-installer auto_path.sh
 export LANG=C LC_ALL=C
 
-declare DEVICE EFI=false JSON_PATH="./full_disk_policy.json"
+declare DEVICE EFI=false JSON_PATH="./test.json"
 declare SWAP_SIZE="2048"
+declare set_boot_for_root=false
 
 #检查参数
 check_opts(){
@@ -39,6 +40,13 @@ is_sw() {
   esac
 }
 
+shell_json_to_setboot(){
+  json_path=$JSON_PATH
+  if [ $(jq -r ".[].label" full_disk_policy.json |grep Boot|wc -l) -eq 0 ];then
+    set_boot_for_root=true
+  fi
+}
+
 # shell json
 shell_json(){
   json_path=$JSON_PATH
@@ -56,7 +64,7 @@ shell_json(){
       break
     fi
 
-    creat_part $device $part_num $filesystem $label $usage
+    creat_part $device $part_num $filesystem $mountPoint $label $usage
     
   done
 }
@@ -159,18 +167,18 @@ new_part_table(){
 
 # 获取下一个分区的开头
 get_next_part_start_pos() {
-    local dev_info=$1
-    # 计算分区信息
-    local offset=$(fdisk -l $dev_info | grep  "^$dev_info" | wc -l)
-        PART_NUM=$offset
-    if [ $offset = '0' ]; then
-        offset=2048
-    else
-        local end=$(expr $(fdisk -l $dev_info -o END | sed -n '$p') + 1)
-        offset=$end
+    local device=$1
+    local new_start=0
+    if [ ! -b $device ];then
+      echo "$device is not a device"
     fi
-
-    echo $offset
+    # 计算分区信息
+    parted -s $device unit kb print
+    if [ $? = 0 ];then
+      previous_end=$(parted "$1" unit kb print |grep "Disk ${1}1"|awk '{print $3}'| sed "s|kB||g")
+      new_start=$((pprevious_end + 1))
+    fi
+    echo $new_start
 }
 
 get_part_mountpoint() {
@@ -201,23 +209,67 @@ creat_part(){
   local device=$1
   local part_num=$2
   local filesystem=$3
-  local label=$4
-  local usage=$5
-  
-  if [ $part_num -eq 0 ];then
-    part_num=""
-    device_part=${device}${part_num}
-  else
-    device_part=${device}${part_num}
-  fi
-  part_start=$(get_next_part_start_pos $dev)
+  local mountPoint=$4
+  local label=$5
+  local usage=$6
 
-  if [ x"$EFI" = "xfalse" ];then
-    echo "Create extended partition..."
-    part_end=$((part_start + $(get_system_disk_extend_size)))
-    parted -s "$DEVICE" mkpart extended "${part_start}s" "${part_end}s" ||\
-      error "Failed to create extended partition on $DEVICE!"
+  local device_part=""
+
+  if [ $device =~ "nvme" ];then
+    if [ $part_num -eq 0 ];then
+      part_num=""
+      device_part=${device}p${part_num}
+    else
+      device_part=${device}p${part_num}
+    fi
+  else
+    if [ $part_num -eq 0 ];then
+      part_num=""
+      device_part=${device}${part_num}
+    else
+      device_part=${device}${part_num}
+    fi
   fi
+
+  # 单位皆为KiB=1024 bytes
+  part_start=$(get_next_part_start_pos $device_part)
+  part_size=$(usage)
+  part_end=$((part_start + part_size))
+  # todo 获取磁盘最大容量，如果part_end 大于最大容量，将最大容量设为end
+
+
+  if [ x"$EFI" = "xtrue" ];then
+    # gpt分区表
+    parted -s "$device" mkpart primary $filesystem "${part_start}KiB" "${part_end}KiB" ||\
+      error "Failed to create primary partition on $device!"
+    
+  else
+    # todo 根据第几个来判断创建主分区还是扩展分区还是逻辑分区
+    echo "Create extended partition..."
+    
+    parted -s "$device" mkpart extended "${part_start}KiB" "${part_end}KiB" ||\
+      error "Failed to create extended partition on $device!"
+  fi
+
+  flush_message
+
+# todo 格式化分区
+ format_part
+
+  # Set boot flag.
+  case $mountPoint in
+    /boot)
+      # Set boot flag in legacy mode.
+      $EFI || $set_boot_for_root || parted -s "$device" set "$part_num" boot on 
+      ;;
+    /)
+      if [ "x$set_boot_for_root" = "xtrue" ];then
+        $EFI || parted -s "$device" set "$part_num" boot on
+      fi
+      ;;
+  esac || error "Failed to set boot flag on $device_part"
+
+  flush_message
 
 }
 
@@ -227,6 +279,7 @@ main(){
   # 启动模式检查
   # 设置分区表
   # 创建分区
+  # 检查是否非UEFI设置了分区boot on
   DEVICE=$1
   umount_devices "$DEVICE"
   check_efi_mode
