@@ -1,0 +1,545 @@
++ export LANG=C LC_ALL=C
++ LANG=C
++ LC_ALL=C
++ declare DEVICE EFI=false JSON_PATH=./test.json
++ declare SWAP_SIZE=2048
++ declare set_boot_for_root=false
++ main /dev/sdb
++ DEVICE=/dev/sdb
++ umount_devices /dev/sdb
++ '[' 1 = 1 ']'
++ umount -lf /dev/sdb /dev/sdb1 /dev/sdb2 /dev/sdb3 /dev/sdb4
++ swapoff -a
++ '[' -d /target ']'
++ check_efi_mode
++ is_sw
++ case $(uname -m) in
+++ uname -m
++ return 1
++ '[' -d /sys/firmware/efi ']'
++ declare -g EFI=true
++ '[' x = xtrue ']'
++ new_part_table /dev/sdb
++ '[' xtrue = xtrue ']'
++ local part_table=gpt
++ echo part_table=gpt
+part_table=gpt
++ parted -s /dev/sdb mktable gpt
++ echo 'new part table: /dev/sdb = gpt'
+new part table: /dev/sdb = gpt
++ shell_json
++ json_path=./test.json
++ (( i=0 ))
++ (( i<10 ))
++ local device=/dev/sdb
++ local part_num=0
+++ jq -r '.[0].filesystem' ./test.json
++ local filesystem=ext4
+++ jq -r '.[0].mountPoint' ./test.json
++ local mountPoint=/boot
+++ jq -r '.[0].label' ./test.json
++ local label=Boot
+++ jq -r '.[0].usage' ./test.json
++ local usage=10240
+++ jq -r '.[0].alignStart' ./test.json
++ local alignStart=true
++ '[' ext4 = null ']'
++ part_num=1
++ creat_part /dev/sdb 1 ext4 /boot Boot 10240
++ local device=/dev/sdb
++ local part_num=1
++ local filesystem=ext4
++ local mountPoint=/boot
++ local label=Boot
++ local usage=10240
++ local device_part=
++ local previous_part=0
++ [[ /dev/sdb =~ nvme ]]
++ device_part=/dev/sdb1
++ previous_part=/dev/sdb0
+++ get_next_part_start_pos /dev/sdb
+++ local dev_info=/dev/sdb
++++ fdisk -l /dev/sdb
++++ grep '^/dev/sdb'
++++ wc -l
+++ local offset=0
+++ PART_NUM=0
+++ '[' 0 = 0 ']'
+++ offset=2048
+++ echo 2048
++ part_start=2048
++ part_size=10240
++ '[' 2048 = 0% ']'
++ part_end=12288
++ part_end=12288
++ part_start=2560
+++ parted -s /dev/sdb unit s print
+++ grep 'Disk /dev/sdb'
+++ awk '{print $3}'
+++ sed 's|s||g'
++ device_end=41943040
++ '[' 12288 -gt 41943040 ']'
++ '[' xtrue = xtrue ']'
++ '[' 2560 = 0% ']'
++ parted -s /dev/sdb mkpart primary ext4 2560s 12288s
+Warning: The resulting partition is not properly aligned for best performance: 2560s % 2048s != 0s
++ flush_message
++ udevadm settle --timeout=5
++ format_part /dev/sdb1 ext4 Boot
++ local part_path=/dev/sdb1 part_fs=ext4 part_label=Boot
++ local part_fs_=ext4
++ '[' ext4 = recovery ']'
++ yes
++ case "$part_fs_" in
++ is_loongson
++ case $(uname -m) in
+++ uname -m
++ return 1
++ is_sw
++ case $(uname -m) in
+++ uname -m
++ return 1
++ mkfs.ext4 -L Boot /dev/sdb1
+mke2fs 1.46.3 (27-Jul-2021)
+
+Filesystem too small for a journal
+Creating filesystem with 1216 4k blocks and 1216 inodes
+
+Allocating group tables: 0/1   done                            
+Writing inode tables: 0/1   done                            
+Writing superblocks and filesystem accounting information: 0/1   done
+
++ case $mountPoint in
++ true
++ flush_message
++ udevadm settle --timeout=5
++ (( i++ ))
++ (( i<10 ))
++ local device=/dev/sdb
++ local part_num=1
+++ jq -r '.[1].filesystem' ./test.json
++ local filesystem=linux-swap
+++ jq -r '.[1].mountPoint' ./test.json
++ local mountPoint=swap
+++ jq -r '.[1].label' ./test.json
++ local label=SWAP
+++ jq -r '.[1].usage' ./test.json
++ local usage=10240
+++ jq -r '.[1].alignStart' ./test.json
++ local alignStart=false
++ '[' linux-swap = null ']'
++ part_num=2
++ creat_part /dev/sdb 2 linux-swap swap SWAP 10240
++ local device=/dev/sdb
++ local part_num=2
++ local filesystem=linux-swap
++ local mountPoint=swap
++ local label=SWAP
++ local usage=10240
++ local device_part=
++ local previous_part=0
++ [[ /dev/sdb =~ nvme ]]
++ device_part=/dev/sdb2
++ previous_part=/dev/sdb1
+++ get_next_part_start_pos /dev/sdb
+++ local dev_info=/dev/sdb
++++ fdisk -l /dev/sdb
++++ grep '^/dev/sdb'
++++ wc -l
+++ local offset=1
+++ PART_NUM=1
+++ '[' 1 = 0 ']'
+++++ fdisk -l /dev/sdb -o END
+++++ sed -n '$p'
++++ expr 12288 + 1
+++ local end=12289
+++ offset=12289
+++ echo 12289
++ part_start=12289
++ part_size=10240
++ '[' 12289 = 0% ']'
++ part_end=22529
++ part_end=22528
++ part_start=12800
+++ parted -s /dev/sdb unit s print
+++ grep 'Disk /dev/sdb'
+++ awk '{print $3}'
+++ sed 's|s||g'
++ device_end=41943040
++ '[' 22528 -gt 41943040 ']'
++ '[' xtrue = xtrue ']'
++ '[' 12800 = 0% ']'
++ parted -s /dev/sdb mkpart primary linux-swap 12800s 22528s
+Warning: The resulting partition is not properly aligned for best performance: 12800s % 2048s != 0s
++ flush_message
++ udevadm settle --timeout=5
++ format_part /dev/sdb2 linux-swap SWAP
++ local part_path=/dev/sdb2 part_fs=linux-swap part_label=SWAP
++ local part_fs_=linux-swap
++ '[' linux-swap = recovery ']'
++ yes
++ case "$part_fs_" in
++ mkswap /dev/sdb2
+mkswap: /dev/sdb2: warning: wiping old swap signature.
+Setting up swapspace version 1, size = 4.7 MiB (4976640 bytes)
+no label, UUID=5c2303be-ceb4-44bc-a36f-abacc524a8c8
++ case $mountPoint in
++ flush_message
++ udevadm settle --timeout=5
++ (( i++ ))
++ (( i<10 ))
++ local device=/dev/sdb
++ local part_num=2
+++ jq -r '.[2].filesystem' ./test.json
++ local filesystem=ext4
+++ jq -r '.[2].mountPoint' ./test.json
++ local mountPoint=/recovery
+++ jq -r '.[2].label' ./test.json
++ local label=Backup
+++ jq -r '.[2].usage' ./test.json
++ local usage=20480
+++ jq -r '.[2].alignStart' ./test.json
++ local alignStart=false
++ '[' ext4 = null ']'
++ part_num=3
++ creat_part /dev/sdb 3 ext4 /recovery Backup 20480
++ local device=/dev/sdb
++ local part_num=3
++ local filesystem=ext4
++ local mountPoint=/recovery
++ local label=Backup
++ local usage=20480
++ local device_part=
++ local previous_part=0
++ [[ /dev/sdb =~ nvme ]]
++ device_part=/dev/sdb3
++ previous_part=/dev/sdb2
+++ get_next_part_start_pos /dev/sdb
+++ local dev_info=/dev/sdb
++++ fdisk -l /dev/sdb
++++ grep '^/dev/sdb'
++++ wc -l
+++ local offset=2
+++ PART_NUM=2
+++ '[' 2 = 0 ']'
+++++ fdisk -l /dev/sdb -o END
+++++ sed -n '$p'
++++ expr 22528 + 1
+++ local end=22529
+++ offset=22529
+++ echo 22529
++ part_start=22529
++ part_size=20480
++ '[' 22529 = 0% ']'
++ part_end=43009
++ part_end=43008
++ part_start=23040
+++ parted -s /dev/sdb unit s print
+++ grep 'Disk /dev/sdb'
+++ awk '{print $3}'
+++ sed 's|s||g'
++ device_end=41943040
++ '[' 43008 -gt 41943040 ']'
++ '[' xtrue = xtrue ']'
++ '[' 23040 = 0% ']'
++ parted -s /dev/sdb mkpart primary ext4 23040s 43008s
+Warning: The resulting partition is not properly aligned for best performance: 23040s % 2048s != 0s
++ flush_message
++ udevadm settle --timeout=5
++ format_part /dev/sdb3 ext4 Backup
++ local part_path=/dev/sdb3 part_fs=ext4 part_label=Backup
++ local part_fs_=ext4
++ '[' ext4 = recovery ']'
++ yes
++ case "$part_fs_" in
++ is_loongson
++ case $(uname -m) in
+++ uname -m
++ return 1
++ is_sw
++ case $(uname -m) in
+++ uname -m
++ return 1
++ mkfs.ext4 -L Backup /dev/sdb3
+mke2fs 1.46.3 (27-Jul-2021)
+Creating filesystem with 2496 4k blocks and 2496 inodes
+
+Allocating group tables: 0/1   done                            
+Writing inode tables: 0/1   done                            
+Creating journal (1024 blocks): done
+Writing superblocks and filesystem accounting information: 0/1   done
+
++ case $mountPoint in
++ flush_message
++ udevadm settle --timeout=5
++ (( i++ ))
++ (( i<10 ))
++ local device=/dev/sdb
++ local part_num=3
+++ jq -r '.[3].filesystem' ./test.json
++ local filesystem=ext4
+++ jq -r '.[3].mountPoint' ./test.json
++ local mountPoint=/
+++ jq -r '.[3].label' ./test.json
++ local label=Roota
+++ jq -r '.[3].usage' ./test.json
++ local usage=40960
+++ jq -r '.[3].alignStart' ./test.json
++ local alignStart=true
++ '[' ext4 = null ']'
++ part_num=4
++ creat_part /dev/sdb 4 ext4 / Roota 40960
++ local device=/dev/sdb
++ local part_num=4
++ local filesystem=ext4
++ local mountPoint=/
++ local label=Roota
++ local usage=40960
++ local device_part=
++ local previous_part=0
++ [[ /dev/sdb =~ nvme ]]
++ device_part=/dev/sdb4
++ previous_part=/dev/sdb3
+++ get_next_part_start_pos /dev/sdb
+++ local dev_info=/dev/sdb
++++ fdisk -l /dev/sdb
++++ grep '^/dev/sdb'
++++ wc -l
+++ local offset=3
+++ PART_NUM=3
+++ '[' 3 = 0 ']'
+++++ fdisk -l /dev/sdb -o END
+++++ sed -n '$p'
++++ expr 43008 + 1
+++ local end=43009
+++ offset=43009
+++ echo 43009
++ part_start=43009
++ part_size=40960
++ '[' 43009 = 0% ']'
++ part_end=83969
++ part_end=83968
++ part_start=43520
+++ parted -s /dev/sdb unit s print
+++ grep 'Disk /dev/sdb'
+++ awk '{print $3}'
+++ sed 's|s||g'
++ device_end=41943040
++ '[' 83968 -gt 41943040 ']'
++ '[' xtrue = xtrue ']'
++ '[' 43520 = 0% ']'
++ parted -s /dev/sdb mkpart primary ext4 43520s 83968s
+Warning: The resulting partition is not properly aligned for best performance: 43520s % 2048s != 0s
++ flush_message
++ udevadm settle --timeout=5
++ format_part /dev/sdb4 ext4 Roota
++ local part_path=/dev/sdb4 part_fs=ext4 part_label=Roota
++ local part_fs_=ext4
++ '[' ext4 = recovery ']'
++ yes
++ case "$part_fs_" in
++ is_loongson
++ case $(uname -m) in
+++ uname -m
++ return 1
++ is_sw
++ case $(uname -m) in
+++ uname -m
++ return 1
++ mkfs.ext4 -L Roota /dev/sdb4
+mke2fs 1.46.3 (27-Jul-2021)
+Creating filesystem with 5056 4k blocks and 5056 inodes
+
+Allocating group tables: 0/1   done                            
+Writing inode tables: 0/1   done                            
+Creating journal (1024 blocks): done
+Writing superblocks and filesystem accounting information: 0/1   done
+
++ case $mountPoint in
++ '[' xfalse = xtrue ']'
++ flush_message
++ udevadm settle --timeout=5
++ (( i++ ))
++ (( i<10 ))
++ local device=/dev/sdb
++ local part_num=4
+++ jq -r '.[4].filesystem' ./test.json
++ local filesystem=ext4
+++ jq -r '.[4].mountPoint' ./test.json
++ local mountPoint=
+++ jq -r '.[4].label' ./test.json
++ local label=Rootb
+++ jq -r '.[4].usage' ./test.json
++ local usage=40960
+++ jq -r '.[4].alignStart' ./test.json
++ local alignStart=true
++ '[' ext4 = null ']'
++ part_num=5
++ creat_part /dev/sdb 5 ext4 Rootb 40960
++ local device=/dev/sdb
++ local part_num=5
++ local filesystem=ext4
++ local mountPoint=Rootb
++ local label=40960
++ local usage=
++ local device_part=
++ local previous_part=0
++ [[ /dev/sdb =~ nvme ]]
++ device_part=/dev/sdb5
++ previous_part=/dev/sdb4
+++ get_next_part_start_pos /dev/sdb
+++ local dev_info=/dev/sdb
++++ fdisk -l /dev/sdb
++++ grep '^/dev/sdb'
++++ wc -l
+++ local offset=4
+++ PART_NUM=4
+++ '[' 4 = 0 ']'
+++++ fdisk -l /dev/sdb -o END
+++++ sed -n '$p'
++++ expr 83968 + 1
+++ local end=83969
+++ offset=83969
+++ echo 83969
++ part_start=83969
++ part_size=
++ '[' 83969 = 0% ']'
++ part_end=83969
++ part_end=83968
++ part_start=84480
+++ parted -s /dev/sdb unit s print
+++ grep 'Disk /dev/sdb'
+++ awk '{print $3}'
+++ sed 's|s||g'
++ device_end=41943040
++ '[' 83968 -gt 41943040 ']'
++ '[' xtrue = xtrue ']'
++ '[' 84480 = 0% ']'
++ parted -s /dev/sdb mkpart primary ext4 84480s 83968s
+Error: Can't have the end before the start! (start sector=84480 length=-511)
++ error 'Failed to create primary partition on /dev/sdb!'
+./auto_part.sh: line 268: error: command not found
++ flush_message
++ udevadm settle --timeout=5
++ format_part /dev/sdb5 ext4 40960
++ local part_path=/dev/sdb5 part_fs=ext4 part_label=40960
++ local part_fs_=ext4
++ '[' ext4 = recovery ']'
++ yes
++ case "$part_fs_" in
++ is_loongson
++ case $(uname -m) in
+++ uname -m
++ return 1
++ is_sw
++ case $(uname -m) in
+++ uname -m
++ return 1
++ mkfs.ext4 -L 40960 /dev/sdb5
+mke2fs 1.46.3 (27-Jul-2021)
+The file /dev/sdb5 does not exist and no size was specified.
++ error 'Failed to create ext4 filesystem on /dev/sdb5!'
+./auto_part.sh: line 138: error: command not found
++ case $mountPoint in
++ flush_message
++ udevadm settle --timeout=5
++ (( i++ ))
++ (( i<10 ))
++ local device=/dev/sdb
++ local part_num=5
+++ jq -r '.[5].filesystem' ./test.json
++ local filesystem=ext4
+++ jq -r '.[5].mountPoint' ./test.json
++ local mountPoint=/data
+++ jq -r '.[5].label' ./test.json
++ local label=_dde_data
+++ jq -r '.[5].usage' ./test.json
++ local usage=10240
+++ jq -r '.[5].alignStart' ./test.json
++ local alignStart=true
++ '[' ext4 = null ']'
++ part_num=6
++ creat_part /dev/sdb 6 ext4 /data _dde_data 10240
++ local device=/dev/sdb
++ local part_num=6
++ local filesystem=ext4
++ local mountPoint=/data
++ local label=_dde_data
++ local usage=10240
++ local device_part=
++ local previous_part=0
++ [[ /dev/sdb =~ nvme ]]
++ device_part=/dev/sdb6
++ previous_part=/dev/sdb5
+++ get_next_part_start_pos /dev/sdb
+++ local dev_info=/dev/sdb
++++ fdisk -l /dev/sdb
++++ grep '^/dev/sdb'
++++ wc -l
+++ local offset=4
+++ PART_NUM=4
+++ '[' 4 = 0 ']'
+++++ fdisk -l /dev/sdb -o END
+++++ sed -n '$p'
++++ expr 83968 + 1
+++ local end=83969
+++ offset=83969
+++ echo 83969
++ part_start=83969
++ part_size=10240
++ '[' 83969 = 0% ']'
++ part_end=94209
++ part_end=94208
++ part_start=84480
+++ parted -s /dev/sdb unit s print
+++ grep 'Disk /dev/sdb'
+++ awk '{print $3}'
+++ sed 's|s||g'
++ device_end=41943040
++ '[' 94208 -gt 41943040 ']'
++ '[' xtrue = xtrue ']'
++ '[' 84480 = 0% ']'
++ parted -s /dev/sdb mkpart primary ext4 84480s 94208s
+Warning: The resulting partition is not properly aligned for best performance: 84480s % 2048s != 0s
++ flush_message
++ udevadm settle --timeout=5
++ format_part /dev/sdb6 ext4 _dde_data
++ local part_path=/dev/sdb6 part_fs=ext4 part_label=_dde_data
++ local part_fs_=ext4
++ '[' ext4 = recovery ']'
++ yes
++ case "$part_fs_" in
++ is_loongson
++ case $(uname -m) in
+++ uname -m
++ return 1
++ is_sw
++ case $(uname -m) in
+++ uname -m
++ return 1
++ mkfs.ext4 -L _dde_data /dev/sdb6
+mke2fs 1.46.3 (27-Jul-2021)
+The file /dev/sdb6 does not exist and no size was specified.
++ error 'Failed to create ext4 filesystem on /dev/sdb6!'
+./auto_part.sh: line 138: error: command not found
++ case $mountPoint in
++ flush_message
++ udevadm settle --timeout=5
++ (( i++ ))
++ (( i<10 ))
++ local device=/dev/sdb
++ local part_num=6
+++ jq -r '.[6].filesystem' ./test.json
++ local filesystem=null
+++ jq -r '.[6].mountPoint' ./test.json
++ local mountPoint=null
+++ jq -r '.[6].label' ./test.json
++ local label=null
+++ jq -r '.[6].usage' ./test.json
++ local usage=null
+++ jq -r '.[6].alignStart' ./test.json
++ local alignStart=null
++ '[' null = null ']'
++ echo '=============== Json End ================'
+=============== Json End ================
++ break

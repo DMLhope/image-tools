@@ -64,7 +64,7 @@ shell_json(){
       echo "=============== Json End ================"
       break
     fi
-
+    part_num=$((part_num + 1))
     creat_part $device $part_num $filesystem $mountPoint $label $usage
     
   done
@@ -167,19 +167,32 @@ new_part_table(){
 }
 
 # 获取下一个分区的开头
+# get_next_part_start_pos() {
+#     local device_part=$1
+#     local new_start=0
+#     if [ ! -b $device_part ];then
+#       echo "0%"
+#     else
+#       # 计算分区信息
+#       previous_end=$(parted -s  "$1" unit s print |grep "Disk ${1}"|awk '{print $3}'| sed "s|s||g")
+#       new_start=$((previous_end + 0))
+#       echo $new_start
+#     fi
+# }
+
 get_next_part_start_pos() {
-    local device=$1
-    local new_start=0
-    if [ ! -b $device ];then
-      echo "$device is not a device"
-    fi
+    local dev_info=$1
     # 计算分区信息
-    parted -s $device unit kb print
-    if [ $? = 0 ];then
-      previous_end=$(parted -s  "$1" unit kb print |grep "Disk ${1}1"|awk '{print $3}'| sed "s|kB||g")
-      new_start=$((pprevious_end + 1))
+    local offset=$(fdisk -l $dev_info | grep  "^$dev_info" | wc -l)
+        PART_NUM=$offset
+    if [ $offset = '0' ]; then
+        offset=2048
+    else
+        local end=$(expr $(fdisk -l $dev_info -o END | sed -n '$p') + 1)
+        offset=$end
     fi
-    echo $new_start
+
+    echo $offset
 }
 
 get_part_mountpoint() {
@@ -215,44 +228,50 @@ creat_part(){
   local usage=$6
 
   local device_part=""
+  local previous_part=0
 
-  if [ $device =~ "nvme" ];then
-    if [ $part_num -eq 0 ];then
-      part_num=""
+
+  if [[ "$device" =~ "nvme" ]];then
       device_part=${device}p${part_num}
-    else
-      device_part=${device}p${part_num}
-    fi
+      previous_part=${device}p"$((part_num - 1))"
   else
-    if [ $part_num -eq 0 ];then
-      part_num=""
       device_part=${device}${part_num}
-    else
-      device_part=${device}${part_num}
-    fi
+      previous_part=${device}"$((part_num - 1))"
   fi
 
-  # 单位皆为KiB=1024 bytes
-  part_start=$(get_next_part_start_pos $device_part)
-  part_size=$(usage)
-  part_end=$((part_start + part_size))
+  # 单位皆为s=1024 bytes
+  part_start=$(get_next_part_start_pos $device)
+  part_size=$usage
+  if [ "$part_start" = "0%" ];then
+    part_end=$((0 + part_size))
+    part_end=$(((part_end + 256) / 512 * 512)) 
+  else
+    part_end=$((part_start + part_size))
+    part_end=$(((part_end + 256) / 512 * 512)) 
+    part_start=$(((part_start + 512) / 512 * 512))
+  fi
   #获取磁盘最大容量，如果part_end 大于最大容量，将最大容量设为end
-  device_end=$(parted -s $device unit kiB print| grep $device |awk '{print $3}'|sed "s|kiB||g")
+  device_end=$(parted -s $device unit s print| grep "Disk $device" |awk '{print $3}'|sed "s|s||g")
   if [ $part_end -gt $device_end ];then
     part_end=$device_end
   fi
 
 
+
   if [ x"$EFI" = "xtrue" ];then
     # gpt分区表
-    parted -s "$device" mkpart primary $filesystem "${part_start}KiB" "${part_end}KiB" ||\
-      error "Failed to create primary partition on $device!"
-    
+    if [ "$part_start" = "0%" ];then
+      parted -s "$device" mkpart primary $filesystem 0% "${part_end}s" ||\
+        error "Failed to create primary partition on $device!"
+    else
+      parted -s "$device" mkpart primary $filesystem "${part_start}s" "${part_end}s" ||\
+        error "Failed to create primary partition on $device!"
+    fi
   else
     # todo 根据第几个来判断创建主分区还是扩展分区还是逻辑分区
     echo "Create extended partition..."
     
-    parted -s "$device" mkpart extended "${part_start}KiB" "${part_end}KiB" ||\
+    parted -s "$device" mkpart extended "${part_start}s" "${part_end}s" ||\
       error "Failed to create extended partition on $device!"
   fi
 

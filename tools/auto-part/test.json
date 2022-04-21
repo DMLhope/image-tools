@@ -2,7 +2,7 @@
         "filesystem": "ext4",
         "mountPoint": "/boot",
         "label": "Boot",
-        "usage": "512",
+        "usage": "10240",
         "alignStart": true,
         "device": "",
         "platform": [ "x86" , "sw" , "loongson" , "arm", "loongarch64" ]
@@ -11,16 +11,16 @@
         "filesystem": "linux-swap",
         "mountPoint": "swap",
         "label": "SWAP",
-        "usage": "1024",
+        "usage": "10240",
         "alignStart": false,
         "device": "",
         "platform": [ "x86", "sw", "loongson", "arm", "loongarch64" ]
     },
     {
-        "filesystem": "recovery",
+        "filesystem": "ext4",
         "mountPoint": "/recovery",
         "label": "Backup",
-        "usage": "2048",
+        "usage": "20480",
         "alignStart": false,
         "device": "",
         "platform": [ "x86", "sw", "loongson", "arm", "loongarch64" ]
@@ -29,7 +29,7 @@
         "filesystem": "ext4",
         "mountPoint": "/",
         "label": "Roota",
-        "usage": "4096",
+        "usage": "40960",
         "alignStart": true,
         "device": "",
         "platform": [ "x86", "sw", "loongson", "arm", "loongarch64" ]
@@ -38,7 +38,7 @@
         "filesystem": "ext4",
         "mountPoint": "",
         "label": "Rootb",
-        "usage": "4096",
+        "usage": "40960",
         "alignStart": true,
         "device": "",
         "platform": [ "x86", "sw", "loongson", "arm", "loongarch64" ]
@@ -47,7 +47,7 @@
         "filesystem": "ext4",
         "mountPoint": "/data",
         "label": "_dde_data",
-        "usage": "1024",
+        "usage": "10240",
         "alignStart": true,
         "isDataPartition": true,
         "device": "",
