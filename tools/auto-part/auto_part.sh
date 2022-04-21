@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 #代码参考deepin-installer auto_path.sh
 export LANG=C LC_ALL=C
 
@@ -175,7 +176,7 @@ get_next_part_start_pos() {
     # 计算分区信息
     parted -s $device unit kb print
     if [ $? = 0 ];then
-      previous_end=$(parted "$1" unit kb print |grep "Disk ${1}1"|awk '{print $3}'| sed "s|kB||g")
+      previous_end=$(parted -s  "$1" unit kb print |grep "Disk ${1}1"|awk '{print $3}'| sed "s|kB||g")
       new_start=$((pprevious_end + 1))
     fi
     echo $new_start
@@ -235,7 +236,11 @@ creat_part(){
   part_start=$(get_next_part_start_pos $device_part)
   part_size=$(usage)
   part_end=$((part_start + part_size))
-  # todo 获取磁盘最大容量，如果part_end 大于最大容量，将最大容量设为end
+  #获取磁盘最大容量，如果part_end 大于最大容量，将最大容量设为end
+  device_end=$(parted -s $device unit kiB print| grep $device |awk '{print $3}'|sed "s|kiB||g")
+  if [ $part_end -gt $device_end ];then
+    part_end=$device_end
+  fi
 
 
   if [ x"$EFI" = "xtrue" ];then
@@ -254,7 +259,7 @@ creat_part(){
   flush_message
 
 # todo 格式化分区
- format_part
+ format_part $device_part $filesystem $label
 
   # Set boot flag.
   case $mountPoint in
@@ -288,3 +293,4 @@ main(){
 
 }
 
+main $@
