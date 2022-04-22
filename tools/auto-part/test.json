@@ -47,7 +47,7 @@
         "filesystem": "ext4",
         "mountPoint": "/data",
         "label": "_dde_data",
-        "usage": "10240",
+        "usage": "102400",
         "alignStart": true,
         "isDataPartition": true,
         "device": "",

@@ -65,7 +65,14 @@ shell_json(){
       break
     fi
     part_num=$((part_num + 1))
-    creat_part $device $part_num $filesystem $mountPoint $label $usage
+    for n in $device $part_num $filesystem $label $usage
+    do
+      if [[ -z $n ]];then
+        echo "lost opts"
+        exit 2
+      fi
+    done
+    creat_part $device $part_num $filesystem $label $usage
     
   done
 }
@@ -138,17 +145,6 @@ format_part(){
   esac || error "Failed to create $part_fs filesystem on $part_path!"
 }
 
-# 查找容量最大的设备
-# get_max_capacity_device(){
-#   local name size max_device max_size=0
-#   while read name size; do
-#     if ((size >= max_size)); then
-#       max_size="$size"
-#       max_device="/dev/$name"
-#     fi
-#   done < <(lsblk -ndb -o NAME,SIZE)
-#   DEVICE="$max_device"
-# }
 
 
 # Create new partition table.
@@ -166,19 +162,6 @@ new_part_table(){
   echo "new part table: $DEVICE = $part_table"
 }
 
-# 获取下一个分区的开头
-# get_next_part_start_pos() {
-#     local device_part=$1
-#     local new_start=0
-#     if [ ! -b $device_part ];then
-#       echo "0%"
-#     else
-#       # 计算分区信息
-#       previous_end=$(parted -s  "$1" unit s print |grep "Disk ${1}"|awk '{print $3}'| sed "s|s||g")
-#       new_start=$((previous_end + 0))
-#       echo $new_start
-#     fi
-# }
 
 get_next_part_start_pos() {
     local dev_info=$1
@@ -208,24 +191,20 @@ get_part_mountpoint() {
     elif [ "x$LABEL" = "xRoota" ];then
         echo "/"
     elif [ "x$LABEL" = "x_dde_data" ];then
-        echo "$(installer_get DI_DATA_MOUNT_POINT)"
+        echo "/data"
     else
         echo ""
     fi
-}
-
-get_part_number() {
-    local PART_PATH=$1
-    echo "${PART_PATH##*[a-zA-Z]}"
 }
 
 creat_part(){
   local device=$1
   local part_num=$2
   local filesystem=$3
-  local mountPoint=$4
-  local label=$5
-  local usage=$6
+  local label=$4
+  local usage=$5
+  local mountPoint=$(get_part_mountpoint $label)
+  
 
   local device_part=""
   local previous_part=0
