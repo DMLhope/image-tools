@@ -235,21 +235,15 @@ creat_part(){
     part_end=$device_end
   fi
 
-
-
   if [ x"$EFI" = "xtrue" ];then
-    # gpt分区表
-    if [ "$part_start" = "0%" ];then
-      parted -s "$device" mkpart primary $filesystem 0% "${part_end}s" ||\
-        error "Failed to create primary partition on $device!"
-    else
       parted -s "$device" mkpart primary $filesystem "${part_start}s" "${part_end}s" ||\
         error "Failed to create primary partition on $device!"
-    fi
   else
     # todo 根据第几个来判断创建主分区还是扩展分区还是逻辑分区
+    if [ $part_num = 1 ];then
+      echo 1
+    fi
     echo "Create extended partition..."
-    
     parted -s "$device" mkpart extended "${part_start}s" "${part_end}s" ||\
       error "Failed to create extended partition on $device!"
   fi
@@ -283,6 +277,7 @@ main(){
   # 设置分区表
   # 创建分区
   # 检查是否非UEFI设置了分区boot on
+  check_opts $@
   DEVICE=$1
   umount_devices "$DEVICE"
   check_efi_mode
