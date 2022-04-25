@@ -1,4 +1,13 @@
 [ {
+        "filesystem": "fat32",
+        "mountPoint": "/boot/efi",
+        "label": "EFI",
+        "usage": "10240",
+        "alignStart": true,
+        "device": "",
+        "platform": [ "x86" , "sw" , "loongson" , "arm", "loongarch64" ]
+    },
+    {
         "filesystem": "ext4",
         "mountPoint": "/boot",
         "label": "Boot",

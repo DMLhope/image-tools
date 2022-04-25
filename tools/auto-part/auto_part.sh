@@ -82,7 +82,7 @@ check_efi_mode(){
   is_sw && declare -g EFI=true
   [ -d "/sys/firmware/efi" ] && declare -g EFI=true
   # 允许接收一个参数来强制指定使用efi
-  [ x"$1" = "xtrue" ] && declare -g EFI=true
+  [ ! -z "$1" ] && declare -g EFI=$1
 }
 
 #卸载设备
@@ -110,7 +110,7 @@ flush_message(){
 format_part(){
   local part_path="$1" part_fs="$2" part_label="$3"
   local part_fs_="$part_fs"
-  if [ "$part_fs_" = "recovery" ]; then
+  if [ "$part_fs_" == "recovery" ]; then
      part_fs_=ext4
   fi
 
@@ -141,7 +141,8 @@ format_part(){
       mkfs.xfs -f -L "$part_label" "$part_path"
     ;;
     *)
-      mkfs -t "$part_fs" -L "$part_label" "$part_path";;
+      mkfs -t "$part_fs" -L "$part_label" "$part_path" 
+    ;;
   esac || error "Failed to create $part_fs filesystem on $part_path!"
 }
 
@@ -149,7 +150,7 @@ format_part(){
 
 # Create new partition table.
 new_part_table(){
-  if [ "x$EFI" = "xtrue" ] || is_sw ; then
+  if [ "x$EFI" == "xtrue" ] || is_sw ; then
     local part_table="gpt"
   else
     local part_table="msdos"
@@ -168,7 +169,7 @@ get_next_part_start_pos() {
     # 计算分区信息
     local offset=$(fdisk -l $dev_info | grep  "^$dev_info" | wc -l)
         PART_NUM=$offset
-    if [ $offset = '0' ]; then
+    if [ $offset == '0' ]; then
         offset=2048
     else
         local end=$(expr $(fdisk -l $dev_info -o END | sed -n '$p') + 1)
@@ -197,6 +198,18 @@ get_part_mountpoint() {
     fi
 }
 
+get_device_part(){
+  device=$1
+  part_num=$2
+  if [[ "$device" =~ "nvme" ]];then
+      device_part=${device}p${part_num}
+      echo $device_part
+  else
+      device_part=${device}${part_num}
+      echo $device_part
+  fi
+}
+
 creat_part(){
   local device=$1
   local part_num=$2
@@ -205,23 +218,18 @@ creat_part(){
   local usage=$5
   local mountPoint=$(get_part_mountpoint $label)
   
+  local device_part=$(get_device_part $device $part_num)
 
-  local device_part=""
-  local previous_part=0
-
-
-  if [[ "$device" =~ "nvme" ]];then
-      device_part=${device}p${part_num}
-      previous_part=${device}p"$((part_num - 1))"
-  else
-      device_part=${device}${part_num}
-      previous_part=${device}"$((part_num - 1))"
-  fi
+  # if [[ "$device" =~ "nvme" ]];then
+  #     device_part=${device}p${part_num}
+  # else
+  #     device_part=${device}${part_num}
+  # fi
 
   # 单位皆为s=1024 bytes
   part_start=$(get_next_part_start_pos $device)
   part_size=$usage
-  if [ "$part_start" = "0%" ];then
+  if [ "$part_start" == "2048" ];then
     part_end=$((0 + part_size))
     part_end=$(((part_end + 256) / 512 * 512)) 
   else
@@ -235,24 +243,39 @@ creat_part(){
     part_end=$device_end
   fi
 
-  if [ x"$EFI" = "xtrue" ];then
+  if [ x"$EFI" == "xtrue" ];then
       parted -s "$device" mkpart primary $filesystem "${part_start}s" "${part_end}s" ||\
         error "Failed to create primary partition on $device!"
   else
     # todo 根据第几个来判断创建主分区还是扩展分区还是逻辑分区
-    if [ $part_num = 1 ];then
-      echo 1
+    if [ $part_num -lt 4 ];then
+      parted -s "$device" mkpart primary $filesystem "${part_start}s" "${part_end}s" ||\
+        error "Failed to create primary partition on $device!"
+    else
+      if [ $part_num = 4 ];then
+        echo "Create extended partition..."
+        parted -s "$device" mkpart extended "${part_start}s" "100%" ||\
+          echo "Failed to create extended partition on $device!"
+        part_start=$((part_start+1))
+      fi
+      parted -s "$device" mkpart logical "${part_start}s" "${part_end}s" ||\
+          echo "Failed to create extended partition on $device!"
     fi
-    echo "Create extended partition..."
-    parted -s "$device" mkpart extended "${part_start}s" "${part_end}s" ||\
-      error "Failed to create extended partition on $device!"
   fi
 
   flush_message
 
 # todo 格式化分区
- format_part $device_part $filesystem $label
-
+if [ x"$EFI" = "xtrue" ];then
+ format_part $device_part $filesystem $label ||\
+      echo "Failed to create $part_fs filesystem on $part_path!"
+else
+  if [ $part_num -ge 4 ];then
+    device_part=$(get_device_part $device $((part_num + 1)))
+  fi
+  format_part $device_part $filesystem $label ||\
+      echo "Failed to create $part_fs filesystem on $part_path!"
+fi
   # Set boot flag.
   case $mountPoint in
     /boot)
@@ -280,7 +303,7 @@ main(){
   check_opts $@
   DEVICE=$1
   umount_devices "$DEVICE"
-  check_efi_mode
+  check_efi_mode $2
   new_part_table "$DEVICE"
   shell_json
 
