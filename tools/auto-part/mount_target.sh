@@ -17,22 +17,23 @@ get_device_part(){
   part_num=$2
   if [[ "$device" =~ "nvme" ]];then
       device_part=${device}p${part_num}
-      echo $device_part
+      echo "$device_part"
   else
       device_part=${device}${part_num}
-      echo $device_part
+      echo "$device_part"
   fi
 }
 
 find_root(){
   json_path=$JSON_PATH
   device=$DEVICE
-  for ((i=1;i<11;i++))
+  for ((i=0;i<11;i++))
   do
-    mountPoint=$(jq -r ".["$i"].mountPoint" "$json_path")
-    device_part=$(get_device_part $device $i)
-    if [ $mountPoint == "/" ];then
-      mount $device_part $target
+    part_num=$(( i + 1 ))
+    mountPoint=$(jq -r ".[""$i""].mountPoint" "$json_path")
+    device_part=$(get_device_part "$device" "$part_num")
+    if [ "$mountPoint" == "/" ];then
+      mount "$device_part" $target
     fi
   done
 }
@@ -41,10 +42,11 @@ find_boot(){
   json_path=$JSON_PATH
   device=$DEVICE
   
-  for ((i=1;i<11;i++))
+  for ((i=0;i<11;i++))
   do
-    local mountPoint=$(jq -r ".["$i"].mountPoint" "$json_path")
-    device_part=$(get_device_part "$device" $i)
+    part_num=$(( i + 1 ))
+    mountPoint=$(jq -r ".[""$i""].mountPoint" "$json_path")
+    device_part=$(get_device_part "$device" "$part_num")
     if [ "$mountPoint" == "/boot" ];then
       mkdir -pv $target/boot
       mount "$device_part" $target/boot
@@ -55,8 +57,10 @@ find_boot(){
 
 mount_other_part(){
   json_path=$JSON_PATH
-  for ((i=1;i<11;i++))
+  device=$DEVICE
+  for ((i=0;i<11;i++))
   do
+    part_num=$(( i + 1 ))
     filesystem=$(jq -r ".["$i"].filesystem" "$json_path")
     label=$(jq -r ".["$i"].label" "$json_path")
     mountPoint=$(jq -r ".["$i"].mountPoint" "$json_path")
@@ -65,7 +69,7 @@ mount_other_part(){
       break
     fi
 
-    device_part=$(get_device_part "$device" $i)
+    device_part=$(get_device_part "$device" $part_num)
     if [ "$mountPoint" != "/" ] && [ "$mountPoint" != "/boot" ] && [ "$mountPoint" != "" ];then
       do_mount "$mountPoint" "$device_part"
     fi
@@ -78,16 +82,20 @@ do_mount(){
   mount_dir="/target/$1"
   device_part=$2
 
-  if [ $mount_dir != "/data" ];then
+  if [ "$1" != "/data" ];then
 
     if [ -d "${mount_dir}" ];then
       echo "$mount_dir is already exist"
-      mount $device_part $mount_dir
+      mount "$device_part" "$mount_dir"
     else
-      mkdir -pv $mount_dir
-      mount $device_part $mount_dir
+      mkdir -pv "$mount_dir"
+      mount "$device_part" "$mount_dir"
     fi
   else
+      mkdir -pv "$mount_dir"
+      mount "$device_part" "$mount_dir"
+
+
       mkdir -p /target/data/home
       mkdir -p /target/home
       mount --bind /target/data/home /target/home || error "Faild to mount /target/home"
@@ -111,7 +119,7 @@ do_mount(){
 #检查参数
 check_opts(){
   if [ $# -eq 1 ];then
-    echo $@
+    echo "$@"
   else
     echo "need options!!!"
     exit 1
@@ -122,7 +130,7 @@ main(){
 # 扫根，挂根
 # 扫boot, 挂boot
 # 扫其他，挂其他
-  check_opts $@
+  check_opts "$@"
   DEVICE=$1
   find_root
   find_boot
