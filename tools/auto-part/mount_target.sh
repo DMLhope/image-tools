@@ -61,9 +61,8 @@ mount_other_part(){
   for ((i=0;i<11;i++))
   do
     part_num=$(( i + 1 ))
-    filesystem=$(jq -r ".["$i"].filesystem" "$json_path")
-    label=$(jq -r ".["$i"].label" "$json_path")
-    mountPoint=$(jq -r ".["$i"].mountPoint" "$json_path")
+    filesystem=$(jq -r ".[""$i""].filesystem" "$json_path")
+    mountPoint=$(jq -r ".[""$i""].mountPoint" "$json_path")
     
     if [ "$filesystem" = "null" ];then
       break
@@ -137,6 +136,6 @@ main(){
   mount_other_part
 }
 
-main $@
+main "$@"
 
 
