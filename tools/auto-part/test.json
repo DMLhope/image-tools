@@ -2,7 +2,7 @@
         "filesystem": "fat32",
         "mountPoint": "/boot/efi",
         "label": "EFI",
-        "usage": "10240",
+        "usage": "102400",
         "alignStart": true,
         "device": "",
         "platform": [ "x86" , "sw" , "loongson" , "arm", "loongarch64" ]
@@ -11,7 +11,7 @@
         "filesystem": "ext4",
         "mountPoint": "/boot",
         "label": "Boot",
-        "usage": "10240",
+        "usage": "4096000",
         "alignStart": true,
         "device": "",
         "platform": [ "x86" , "sw" , "loongson" , "arm", "loongarch64" ]
@@ -38,7 +38,7 @@
         "filesystem": "ext4",
         "mountPoint": "/",
         "label": "Roota",
-        "usage": "40960",
+        "usage": "10240000",
         "alignStart": true,
         "device": "",
         "platform": [ "x86", "sw", "loongson", "arm", "loongarch64" ]
@@ -56,7 +56,7 @@
         "filesystem": "ext4",
         "mountPoint": "/data",
         "label": "_dde_data",
-        "usage": "102400",
+        "usage": "10240000",
         "alignStart": true,
         "isDataPartition": true,
         "device": "",

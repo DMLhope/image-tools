@@ -238,7 +238,7 @@ creat_part(){
     part_start=$(((part_start + 512) / 512 * 512))
   fi
   #获取磁盘最大容量，如果part_end 大于最大容量，将最大容量设为end
-  device_end=$(parted -s $device unit s print| grep "Disk $device" |awk '{print $3}'|sed "s|s||g")
+  device_end=$(parted -s "$device" unit s print| grep "Disk $device" |awk '{print $3}'|sed "s|s||g")
   if [ $part_end -gt $device_end ];then
     part_end=$device_end
   fi

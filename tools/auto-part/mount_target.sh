@@ -2,7 +2,7 @@
 # Mount root partition to /target.
 
 set -x
-
+export LANG=C LC_ALL=C
 declare JSON_PATH="./test.json"
 declare DEVICE
 declare target="/target"
