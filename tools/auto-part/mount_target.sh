@@ -4,17 +4,53 @@
 set -x
 export LANG=C LC_ALL=C
 declare JSON_PATH="./test.json"
-declare DEVICE
+declare DEVICE EFI=false
 declare target="/target"
 mkdir -pv ${target}
 chown -v root:root ${target}
 chmod -v 0755 ${target}
 
+is_sw() {
+  case $(uname -m) in
+    sw*)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+# Check boot mode is UEFI or not.
+check_efi_mode(){
+  is_sw && declare -g EFI=true
+  [ -d "/sys/firmware/efi" ] && declare -g EFI=true
+  # 允许接收一个参数来强制指定使用efi
+  [ ! -z "$1" ] && declare -g EFI=$1
+}
+
+find_extended(){
+  if [ $(parted -s "$DEVICE" print |grep "msdos"|wc -l) -eq 1 ];then
+    if [ $(parted -s "$DEVICE" print |grep extended|wc -l) -eq 1 ];then
+      extended_partnum=$(parted -s "$DEVICE" print |grep extended |awk '{print $1}')
+      echo "$extended_partnum"
+    else
+      echo "extended part error!!!"
+      exit 3
+    fi
+  else
+    echo 0
+  fi
+}
 
 
 get_device_part(){
   device=$1
   part_num=$2
+  extended_partnum=$(find_extended)
+  if [ $part_num -ge $extended_partnum ];then
+    part_num=$((part_num + 1))
+  fi
   if [[ "$device" =~ "nvme" ]];then
       device_part=${device}p${part_num}
       echo "$device_part"
@@ -117,7 +153,7 @@ do_mount(){
 
 #检查参数
 check_opts(){
-  if [ $# -eq 1 ];then
+  if [ $# -ge 1 ];then
     echo "$@"
   else
     echo "need options!!!"
@@ -131,6 +167,7 @@ main(){
 # 扫其他，挂其他
   check_opts "$@"
   DEVICE=$1
+  check_efi_mode $2
   find_root
   find_boot
   mount_other_part
