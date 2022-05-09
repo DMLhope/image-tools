@@ -48,7 +48,7 @@ get_device_part(){
   device=$1
   part_num=$2
   extended_partnum=$(find_extended)
-  if [ $part_num -ge $extended_partnum ];then
+  if [ $part_num -ge $extended_partnum ] && [ "$extended_partnum" != "0" ];then
     part_num=$((part_num + 1))
   fi
   if [[ "$device" =~ "nvme" ]];then
@@ -161,13 +161,34 @@ check_opts(){
   fi
 }
 
+
+
+echo_fstab_title(){
+  echo "# <file system> <mount point>   <type>  <options>       <dump>  <pass>" > /target/etc/fstab
+}
+
+creat_fstab(){
+  device_part=$1
+  mount_dir=$2
+  part_uuid=$(lsblk -o UUID "$device_part"|sed -n '$p')
+  part_fstype=$(lsblk -o FSTYPE "$device_part"|sed -n '$p')
+  
+  if [ "$mount_dir" == "/" ];then
+    echo "UUID=${part_uuid}  ${mount_dir}          ${part_fstype}    loop,errors=remount-ro 0       1" >> /target/etc/fstab
+  fi
+
+  
+  
+
+}
+
 main(){
 # 扫根，挂根
 # 扫boot, 挂boot
 # 扫其他，挂其他
   check_opts "$@"
   DEVICE=$1
-  check_efi_mode $2
+  check_efi_mode "$2"
   find_root
   find_boot
   mount_other_part
