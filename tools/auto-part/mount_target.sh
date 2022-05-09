@@ -6,6 +6,7 @@ export LANG=C LC_ALL=C
 declare JSON_PATH="./test.json"
 declare DEVICE EFI=false
 declare target="/target"
+declare fstab_data_flag=false
 mkdir -pv ${target}
 chown -v root:root ${target}
 chmod -v 0755 ${target}
@@ -70,6 +71,7 @@ find_root(){
     device_part=$(get_device_part "$device" "$part_num")
     if [ "$mountPoint" == "/" ];then
       mount "$device_part" $target
+      creat_fstab "$device_part" "$mountPoint"
     fi
   done
 }
@@ -86,6 +88,7 @@ find_boot(){
     if [ "$mountPoint" == "/boot" ];then
       mkdir -pv $target/boot
       mount "$device_part" $target/boot
+      creat_fstab "$device_part" "$mountPoint"
     fi
   done
 }
@@ -105,8 +108,9 @@ mount_other_part(){
     fi
 
     device_part=$(get_device_part "$device" $part_num)
-    if [ "$mountPoint" != "/" ] && [ "$mountPoint" != "/boot" ] && [ "$mountPoint" != "" ];then
+    if [ "$mountPoint" != "/" ] && [ "$mountPoint" != "/boot" ] && [ "$mountPoint" != "" ] && [ "$mountPoint" != "swap" ];then
       do_mount "$mountPoint" "$device_part"
+      creat_fstab "$device_part" "$mountPoint"
     fi
   done
 }
@@ -163,8 +167,8 @@ check_opts(){
 
 
 
-echo_fstab_title(){
-  echo "# <file system> <mount point>   <type>  <options>       <dump>  <pass>" > /target/etc/fstab
+write_fstab_title(){
+  sed -i '1 i # <file system> <mount point>   <type>  <options>       <dump>  <pass>'  /tmp/fstab.in
 }
 
 creat_fstab(){
@@ -174,26 +178,55 @@ creat_fstab(){
   part_fstype=$(lsblk -o FSTYPE "$device_part"|sed -n '$p')
   
   if [ "$mount_dir" == "/" ];then
-    echo "UUID=${part_uuid}  ${mount_dir}          ${part_fstype}    loop,errors=remount-ro 0       1" >> /target/etc/fstab
+    echo "UUID=${part_uuid}  ${mount_dir}     ${part_fstype}    rw,relatime 0   1" >> /tmp/fstab.in
+  
+
+  elif [ "$part_fstype" == "swap" ];then
+    echo "UUID=${part_uuid}   none        swap     defaults,pri=-2 0 0" >> /tmp/fstab.in
+  
+  
+  elif [ "$mount_dir" == "/boot" ];then
+    echo "UUID=${part_uuid}  ${mount_dir}     ${part_fstype}    rw,relatime 0   2" >> /tmp/fstab.in
+  
+
+  elif [ "$mount_dir" == "/boot/efi" ];then
+    echo "UUID=${part_uuid}  ${mount_dir}     ${part_fstype}    rw,relatime,fmask=0022,dmask=0022,codepage=437,iocharset=ascii,shortname=mixed,utf8,errors=remount-ro   0 2" >> /tmp/fstab.in
+  
+  elif  [ "$mount_dir" == "/data" ];then
+    echo "UUID=${part_uuid}  ${mount_dir}     ${part_fstype}    rw,relatime 0   2" >> /tmp/fstab.in
+    declare -g fstab_data_flag=true
+  else
+     echo "UUID=${part_uuid}  ${mount_dir}     ${part_fstype}    rw,relatime 0   2" >> /tmp/fstab.in
+
   fi
 
-  
-  
+}
 
+write_bind_data(){
+  if [ "$fstab_data_flag" == "true" ];then
+    echo "
+/data/home /home none defaults,bind 0 0
+/data/opt /opt none defaults,bind 0 0
+/data/root /root none defaults,bind 0 0
+/data/var /var none defaults,bind 0 0" >> /tmp/fstab.in
+  fi
 }
 
 main(){
 # 扫根，挂根
 # 扫boot, 挂boot
 # 扫其他，挂其他
+
   check_opts "$@"
   DEVICE=$1
   check_efi_mode "$2"
   find_root
   find_boot
   mount_other_part
+# 写fstab预处理文件
+  write_bind_data
+  write_fstab_title
+
 }
 
 main "$@"
-
-
