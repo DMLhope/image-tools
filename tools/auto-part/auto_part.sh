@@ -108,7 +108,7 @@ flush_message(){
 
 # Format partition at $1 with filesystem $2 with label $3.
 format_part(){
-  local part_path="$1" part_fs="$2" part_label="$3"
+  local part_path="$1" part_fs="$2" part_label="$3" part_num="$4"
   local part_fs_="$part_fs"
   if [ "$part_fs_" == "recovery" ]; then
      part_fs_=ext4
@@ -121,7 +121,10 @@ format_part(){
     fat32)
       mkfs.vfat -F32 -n "$part_label" "$part_path";;
     efi)
-      mkfs.vfat -F32 -n "$part_label" "$part_path";;
+      mkfs.vfat -F32 -n "$part_label" "$part_path"
+       # Set esp flag.
+      parted -s "$DEVICE" set "$part_num" esp on
+      ;;
     fat16)
       mkfs.vfat -F16 -n "$part_label" "$part_path";;
     ntfs)
@@ -267,13 +270,13 @@ creat_part(){
 
 # todo 格式化分区
 if [ x"$EFI" = "xtrue" ];then
- format_part $device_part $filesystem $label ||\
+ format_part $device_part $filesystem $label $part_num ||\
       echo "Failed to create $part_fs filesystem on $part_path!"
 else
   if [ $part_num -ge 4 ];then
     device_part=$(get_device_part $device $((part_num + 1)))
   fi
-  format_part $device_part $filesystem $label ||\
+  format_part $device_part $filesystem $label $((part_num + 1)) ||\
       echo "Failed to create $part_fs filesystem on $part_path!"
 fi
   # Set boot flag.
