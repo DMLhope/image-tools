@@ -13,6 +13,16 @@ check_opts(){
   fi
 }
 
+check_dep(){
+  if [ -f "$(which grub-install)" ] && [ -f "$(which update-grub)" ];then
+    echo "depends check pass..."
+  else
+    echo "depends check error!!!!"
+    exit 2
+  fi
+
+}
+
 # Check boot mode is UEFI or not.
 check_efi_mode(){
     [ -d "/sys/firmware/efi" ] && declare -g EFI=true
