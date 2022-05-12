@@ -37,7 +37,8 @@ main(){
     chmod a+x "$chroot_path"/installer/*.sh
     chroot "$chroot_path" /installer/in_chroot.sh "$DEVICE"
 
-    # bash ./tools/umount_chroot.sh "$chroot_path"
+    bash ./tools/umount_chroot.sh "$chroot_path"
+    bash ./auto-part/umount_target.sh
     
 }
 
