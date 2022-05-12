@@ -52,7 +52,7 @@ deps_check(){
 }
 
 chroot_build(){
-    debootstrap "$codename" "$chroot_path" "$repo_url"
+    debootstrap --no-check-gpg "$codename" "$chroot_path" "$repo_url"
 }
 
 mount_dir(){
