@@ -212,11 +212,18 @@ write_bind_data(){
   fi
 }
 
+# 防止重复写入
+clean_fstab(){
+  if [ -f /tmp/fstab.in ];then
+    rm -rf /tmp/fstab.in
+  fi
+}
+
 main(){
 # 扫根，挂根
 # 扫boot, 挂boot
 # 扫其他，挂其他
-
+  clean_fstab
   check_opts "$@"
   DEVICE=$1
   check_efi_mode "$2"
