@@ -146,7 +146,7 @@ format_part(){
     *)
       mkfs -t "$part_fs" -L "$part_label" "$part_path" 
     ;;
-  esac || error "Failed to create $part_fs filesystem on $part_path!"
+  esac || echo "Failed to create $part_fs filesystem on $part_path!"
 }
 
 
@@ -161,7 +161,7 @@ new_part_table(){
 
   echo "part_table=${part_table}"
   parted -s "$DEVICE" mktable "$part_table" ||\
-    error "Failed to create $part_table partition on $DEVICE!"
+    echo "Failed to create $part_table partition on $DEVICE!"
 
   echo "new part table: $DEVICE = $part_table"
 }
@@ -248,12 +248,12 @@ creat_part(){
 
   if [ x"$EFI" == "xtrue" ];then
       parted -s "$device" mkpart primary $filesystem "${part_start}s" "${part_end}s" ||\
-        error "Failed to create primary partition on $device!"
+        echo "Failed to create primary partition on $device!"
   else
     # todo 根据第几个来判断创建主分区还是扩展分区还是逻辑分区
     if [ $part_num -lt 4 ];then
       parted -s "$device" mkpart primary $filesystem "${part_start}s" "${part_end}s" ||\
-        error "Failed to create primary partition on $device!"
+        echo "Failed to create primary partition on $device!"
     else
       if [ $part_num = 4 ];then
         echo "Create extended partition..."
@@ -290,7 +290,7 @@ fi
         $EFI || parted -s "$device" set "$part_num" boot on
       fi
       ;;
-  esac || error "Failed to set boot flag on $device_part"
+  esac || echo "Failed to set boot flag on $device_part"
 
   flush_message
 
