@@ -34,6 +34,7 @@ main(){
     cd ..
     bash ./tools/mount_chroot.sh "$chroot_path"
     cp -rv ./in_chroot "$chroot_path"/installer
+    cp -v ./conf.json "$chroot_path"/installer/conf.json
     chmod a+x "$chroot_path"/installer/*.sh
     chroot "$chroot_path" /installer/in_chroot.sh "$DEVICE"
 

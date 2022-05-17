@@ -14,3 +14,7 @@ shim-signed
 grub-efi-amd64-signed
 grub-efi-amd64-bin
 efibootmgr
+tzdata
+locales
+jq
+dde

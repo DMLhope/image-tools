@@ -4,7 +4,6 @@ set -x
 export LANG=C LC_ALL=C
 
 declare DEVICE EFI=false JSON_PATH="./test.json"
-declare SWAP_SIZE="2048"
 declare set_boot_for_root=false
 
 #检查参数

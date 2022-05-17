@@ -1,8 +1,12 @@
 #!/bin/bash
 echo "=========================in_chroot==================================="
 DEVICE="$1"
-conf_path="/"
-bash /installer/setup_bootloader.sh "$DEVICE" |tee -a /var/log/installer.log
-# 
-bash /installer/set_user.sh
-bash /installer/set_timezone.sh
+conf_path="/installer/conf.json"
+
+bash /installer/setup_bootloader.sh "$DEVICE" 
+
+bash /installer/setup_user.sh $conf_path
+bash /installer/setup_locale.sh $conf_path
+bash /installer/setup_timezone.sh $conf_path
+bash /installer/setup_keyboard.sh $conf_path
+bash /installer/setup_lightdm.sh
