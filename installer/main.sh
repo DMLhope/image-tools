@@ -1,6 +1,7 @@
 #!/bin/bash
 
 chroot_path="/target"
+work_path="/installer"
 
 user_check(){  
     if [ "$USER" != "root" ];then
@@ -26,6 +27,7 @@ main(){
 
     user_check
 
+    cd  $work_path || exit
     cd ./auto-part/ || exit
     bash ./auto_part.sh "$DEVICE"
     bash ./mount_target.sh "$DEVICE"

@@ -38,7 +38,7 @@
         "filesystem": "ext4",
         "mountPoint": "/",
         "label": "Roota",
-        "usage": "10240000",
+        "usage": "20480000",
         "alignStart": true,
         "device": "",
         "platform": [ "x86", "sw", "loongson", "arm", "loongarch64" ]

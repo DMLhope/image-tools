@@ -3,7 +3,7 @@ set -x
 #代码参考deepin-installer auto_path.sh
 export LANG=C LC_ALL=C
 
-declare DEVICE EFI=false JSON_PATH="./test.json"
+declare DEVICE EFI=false JSON_PATH="/installer/parted.json"
 declare set_boot_for_root=false
 
 #检查参数

@@ -3,7 +3,7 @@
 
 set -x
 export LANG=C LC_ALL=C
-declare JSON_PATH="./test.json"
+declare JSON_PATH="/installer/parted.json"
 declare DEVICE EFI=false
 declare target="/target"
 declare fstab_data_flag=false
