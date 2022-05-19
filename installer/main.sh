@@ -2,6 +2,7 @@
 
 chroot_path="/target"
 work_path="/installer"
+settings_path="$work_path/installer_settings.json"
 
 user_check(){  
     if [ "$USER" != "root" ];then
@@ -36,7 +37,7 @@ main(){
     cd ..
     bash ./tools/mount_chroot.sh "$chroot_path"
     cp -rv ./in_chroot "$chroot_path"/installer
-    cp -v ./conf.json "$chroot_path"/installer/conf.json
+    cp -v $settings_path "$chroot_path"/$settings_path
     chmod a+x "$chroot_path"/installer/*.sh
     chroot "$chroot_path" /installer/in_chroot.sh "$DEVICE"
 
