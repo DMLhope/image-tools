@@ -8,6 +8,10 @@ if [ -d /target/data ];then
     umount /target/data
 fi
 
+if [ -d /target/media/cdrom ];then
+    umount /target/media/cdrom
+fi
+
 if [ -d /target/recovery ];then
     umount /target/recovery
 fi

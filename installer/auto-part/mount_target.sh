@@ -1,9 +1,9 @@
 #!/bin/bash
 # Mount root partition to /target.
 
-set -x
+# set -x
 export LANG=C LC_ALL=C
-declare JSON_PATH="/installer/parted.json"
+declare JSON_PATH="/uos-installer/parted.json"
 declare DEVICE EFI=false
 declare target="/target"
 declare fstab_data_flag=false
@@ -226,7 +226,8 @@ main(){
   clean_fstab
   check_opts "$@"
   DEVICE=$1
-  check_efi_mode "$2"
+  declare -g JSON_PATH="$2"
+  check_efi_mode "$3"
   find_root
   find_boot
   mount_other_part

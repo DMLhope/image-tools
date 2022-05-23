@@ -1,14 +1,15 @@
 #!/bin/bash
 echo "=========================in_chroot==================================="
 DEVICE="$1"
-conf_path="/installer/installer_settings.json"
+work_path="/uos-installer"
+conf_path="$work_path/installer_settings.json"
 
-bash /installer/install_package.sh
+bash $work_path/install_package.sh
 
-bash /installer/setup_bootloader.sh "$DEVICE" 
+bash $work_path/setup_bootloader.sh "$DEVICE" 
 
-bash /installer/setup_user.sh $conf_path
-bash /installer/setup_locale.sh $conf_path
-bash /installer/setup_timezone.sh $conf_path
-bash /installer/setup_keyboard.sh $conf_path
-bash /installer/setup_lightdm.sh
+bash $work_path/setup_user.sh $conf_path
+bash $work_path/setup_locale.sh $conf_path
+bash $work_path/setup_timezone.sh $conf_path
+bash $work_path/setup_keyboard.sh $conf_path
+bash $work_path/setup_lightdm.sh

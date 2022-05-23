@@ -1,14 +1,14 @@
 #!/bin/bash
-set -x
+# set -x
 #代码参考deepin-installer auto_path.sh
 export LANG=C LC_ALL=C
 
-declare DEVICE EFI=false JSON_PATH="/installer/parted.json"
+declare DEVICE EFI=false JSON_PATH="/uos-installer/parted.json"
 declare set_boot_for_root=false
 
 #检查参数
 check_opts(){
-  if [ $# -ge 1 ];then
+  if [ $# -ge 2 ];then
     echo $@
   else
     echo "need options!!!"
@@ -304,8 +304,9 @@ main(){
   # 检查是否非UEFI设置了分区boot on
   check_opts $@
   DEVICE=$1
+  declare -g JSON_PATH=$2
   umount_devices "$DEVICE"
-  check_efi_mode $2
+  check_efi_mode $3
   new_part_table "$DEVICE"
   shell_json
 

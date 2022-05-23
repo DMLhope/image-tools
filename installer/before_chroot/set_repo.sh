@@ -7,7 +7,7 @@ mount --bind "$isomount_path" /target/media/cdrom || echo "Failed to bind ${isom
 
 if [ -d $repo_path ];then
 # commented source.list to let apt-get just using cdrom repo.
-sed -i 's/^/#/g' /etc/apt/sources.list
+sed -i 's/^/#/g' /target/etc/apt/sources.list
 
 dir=$(find  $repo_path -name "Release" | xargs awk -F '[ :]+' '/Codename/{print $2}')
 for name in $dir

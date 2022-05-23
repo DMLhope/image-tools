@@ -1,7 +1,7 @@
 #!/bin/bash
 isomount_path=""
 squashfs_path=""
-work_path="/installer/before_chroot/"
+work_path="/uos-installer/before_chroot/"
 
 if grep -q boot=casper /proc/cmdline; then
   BOOT=casper
