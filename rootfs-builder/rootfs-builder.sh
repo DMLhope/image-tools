@@ -10,13 +10,13 @@ rootfs_name="root-""$time_flag"".img"
 
 mkrootfs_img(){
     dd if=/dev/zero of=./"$rootfs_name" bs=1M count=0 seek="$img_size"
-    parted -s ./"$rootfs_name" mklabel msdos mkpart primary ext3 0% 100%
+    parted -s ./"$rootfs_name" mklabel msdos mkpart primary ext4 2048s 100%
 }
 
 mount_rootfs(){
     losetup -fP ./"$rootfs_name"
     devicepart_path=$(losetup -l |grep "$rootfs_name"|awk '{print $1}')p1
-    mkfs.ext3 "$devicepart_path"
+    mkfs.ext4 "$devicepart_path"
     if [ -b "$devicepart_path" ];then
         [ ! -d $chroot_path ] && mkdir $chroot_path
         mount "$devicepart_path" $chroot_path
@@ -52,7 +52,7 @@ deps_check(){
 }
 
 chroot_build(){
-    debootstrap "$codename" "$chroot_path" "$repo_url"
+    debootstrap --no-check-gpg "$codename" "$chroot_path" "$repo_url"
 }
 
 mount_dir(){

@@ -11,7 +11,7 @@ apt_install() {
 
 install_pkg(){
   apt install -y grub-common initramfs-tools-core live-boot \
-      live-boot-initramfs-tools openssl pciutils vim live-tools parted gcc g++ sudo
+      live-boot-initramfs-tools openssl xz-utils pciutils vim live-tools parted gcc g++ sudo
   if [ -f /package.list/extra_deb.list ] && [ -f /package.list/kernel.list ] ;then
     kernel_deb=$(xargs --arg-file=/package.list/kernel.list)
     extra_deb=$(xargs --arg-file=/package.list/extra_deb.list)
@@ -22,20 +22,30 @@ install_pkg(){
   fi
 }
 
+update_initramfs_compess(){
+  sed -i "s|COMPRESS=gzip|COMPRESS=xz|g" /etc/initramfs-tools/initramfs.conf
+}
+
+install_deb(){
+  if [ -d /hooks-data/deb ];then
+    dpkg -i /hooks-data/deb/*.deb
+  fi
+}
+
 update_fstab(){
 echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM
-/dev/sda1 / ext3 rw,relatime 0 1" > /etc/fstab
+/dev/sda1 / ext4 rw,relatime 0 1" > /etc/fstab
 }
-copy_grubconf(){
-  if [ -f /hooks-data/11_linux ];then
-          cp -v /hooks-data/11_linux /etc/grub.d/
-  fi
-}
-copy_bootcfg(){
-  if [ -f /hooks-data/boot.cfg ];then
-          cp -v /hooks-data/boot.cfg /boot/
-  fi
-}
+# copy_grubconf(){
+#   if [ -f /hooks-data/11_linux ];then
+#           cp -v /hooks-data/11_linux /etc/grub.d/
+#   fi
+# }
+# copy_bootcfg(){
+#   if [ -f /hooks-data/boot.cfg ];then
+#           cp -v /hooks-data/boot.cfg /boot/
+#   fi
+# }
 # copy_update_grub(){
 #   if [ -f /hooks-data/update-grub ];then
 #           cp -v /hooks-data/update-grub /usr/sbin/
@@ -53,9 +63,11 @@ add_user(){
 main(){
   add_repo
   install_pkg
-  update_fstab
+  update_initramfs_compess
+  install_deb
+  # update_fstab
   # copy_grubconf
-  copy_bootcfg
+  # copy_bootcfg
   change_root_passwd
   add_user
 }
