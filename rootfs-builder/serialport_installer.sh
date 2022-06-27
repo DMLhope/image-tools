@@ -59,12 +59,12 @@ updateDisk(){
 	part2_start=$(("$part1_end + 1"))
 	part2_end=$(("$part2_start + 2048"))
 	part3_start=$(("$part2_end" + 1))
-	parted -s "$1" mkpart primary linux-swap   "$part2_start"M "$part2_end"M
-	mkswap  "$1"2
+	#parted -s "$1" mkpart primary linux-swap   "$part2_start"M "$part2_end"M
+	#mkswap  "$1"2
 	
-	parted -s "$1" mkpart primary ext4  "$part3_start"M 100%
-	wipefs -a "$1"3
-	mkfs.ext4  "$1"3
+	parted -s "$1" mkpart primary ext4  "$part2_start"M 100%
+	wipefs -a "$1"2
+	mkfs.ext4  "$1"2
 	#e2fsck -f "$1"
 	#e2fsck -yf "$1"2
 }
@@ -172,19 +172,25 @@ update_ssh(){
 		echo "PermitRootLogin yes" >> "$chroot_path"/etc/ssh/sshd_config
 	fi
 }
-
 update_fstab(){
-	if [ ! -f "$chroot_path"/etc/fstab ];then
-		echo "no fstab conf to update"
-		return 1
-	else
-echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM
-/dev/sda1 / ext3 rw,relatime 0 1
-/dev/sda2 none swap sw 0 0
-/dev/sda3 /work ext4 rw,relatime 0 1" > "$chroot_path"/etc/fstab
-	mkdir -p "$chroot_path"/work
+        echo "update fstab configure"
+        if [ ! -f "$chroot_path"/etc/fstab ];then
+                echo "no fstab conf to update"
+                return 1
+        else
+                root_uuid=`blkid ${disk_path}1 | awk '{print $2}'`
+                work_uuid=`blkid ${disk_path}2 | awk '{print $2}'`
+                echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM
+${root_uuid} / ext3 rw,relatime 0 1
+${work_uuid} /work ext4 rw,relatime 0 1" > "$chroot_path"/etc/fstab
+        fi
+}
 
-	fi
+
+
+update_kernel(){
+  cp -v "$chroot_path"/boot/initrd* "$chroot_path"/boot/initrd.img
+  cp -v "$chroot_path"/boot/vmlinu* "$chroot_path"/boot/vmlinuz
 }
 
 update_vsftpd(){
@@ -266,6 +272,8 @@ update_vsftpd
 update_bashrc
 
 update_vimrc
+
+update_kernel
 
 do_hooks
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
 add_repo(){
-  echo "deb [trusted=yes]  http://10.2.10.31/repo/project/pms947-htwy/ eagle main" >> /etc/apt/sources.list
+  echo "deb [trusted=yes]  http://10.2.10.31/user:dml/repo/project/719s-2k1000/ eagle main" >> /etc/apt/sources.list
   apt update
 }
 install_pkg(){
   apt install -y grub-common initramfs-tools-core openssl pciutils vim live-tools parted  gcc g++ sudo isc-dhcp-client
-  apt install -y linux-headers-3.10.0-mips64-core-947=3.10.0-1005 linux-image-3.10.0-mips64-core-947=3.10.0-1005 \
-          default-jdk openssh-server live-boot live-boot-initramfs-tools \
-          openssh-client sqlite vsftpd ftp mariadb-common  mariadb-server mariadb-client ifenslave 
+  apt install -y linux-headers-3.10.0-mips64-core-806 linux-image-3.10.0-mips64-core-806 \
+          openssh-server live-boot live-boot-initramfs-tools \
+          openssh-client ethtool xinit  xorg openbox lightdm lightdm-gtk-greeter x11-apps mesa-utils ifenslave 
 }
 update_fstab(){
 echo "# UNCONFIGURED FSTAB FOR BASE SYSTEM

@@ -53,7 +53,7 @@ deps_check(){
 }
 
 chroot_build(){
-    debootstrap "$codename" "$chroot_path" "$repo_url"
+    debootstrap --no-check-gpg "$codename" "$chroot_path" "$repo_url"
 }
 
 mount_dir(){
@@ -94,6 +94,11 @@ mk_squashfs(){
     mksquashfs "$chroot_path" ./filesystem.squashfs
 }
 
+clean_sourcelist(){}{
+  echo " " $chroot_path/etc/apt/sources.list
+
+}
+
 main(){
     user_check
     opts_check "$@"
@@ -106,6 +111,7 @@ main(){
     mount_dir
     do_inchroot
     umount_dir
+    clean_sourcelist
     mk_squashfs
     umount_rootfs
 }
