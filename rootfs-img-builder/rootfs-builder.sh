@@ -47,7 +47,7 @@ do_inchroot(){
         echo "nothing to do in chroot"
         return 0
     fi
-
+    cp -v /etc/resolv.conf "$chroot_path"/etc/resolv.conf
     if [ -d ./hooks/package.list ];then
         echo "start copy package.list to chroot"
         cp -rv ./hooks/package.list "$chroot_path" 
@@ -71,6 +71,10 @@ do_inchroot(){
     else
         echo "do nothing in chroot"
     fi
+
+    echo "" > "$chroot_path"/etc/resolv.conf
+    rm -rf "$chroot_path"/hooks.sh
+    rm -rf "$chroot_path"/package.list
 }
 
 umount_dir(){
