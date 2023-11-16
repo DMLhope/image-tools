@@ -16,3 +16,4 @@ rsync
 build-essential
 git
 python3
+systemd-timesyncd

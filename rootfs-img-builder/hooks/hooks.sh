@@ -5,14 +5,14 @@ add_repo(){
   apt update
 }
 
-set_hosts(){
-  echo "192.168.1.85  mirror.feixian.software" >> /etc/hosts
-}
+# set_hosts(){
+#   echo "192.168.1.85  mirror.feixian.software" >> /etc/hosts
+# }
 
-clean_hosts(){
-  sed -i '/192.168.1.85/d' /etc/hosts
+# clean_hosts(){
+#   sed -i '/192.168.1.85/d' /etc/hosts
 
-}
+# }
 
 apt_install() {
   DEBIAN_FRONTEND="noninteractive" apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"  --allow-unauthenticated install "$@"
@@ -39,14 +39,18 @@ add_user(){
   useradd -m -G sudo -s  /bin/bash -p "$(openssl passwd -1 123)" fxos
 }
 
+set_hostname(){
+  echo "fxos-pc" > /etc/hostname
+}
 
 main(){
   add_repo
-  set_hosts
+  # set_hosts
   install_pkg
   change_root_passwd
   add_user
-  clean_hosts
+  set_hostname
+  # clean_hosts
 }
 
 main

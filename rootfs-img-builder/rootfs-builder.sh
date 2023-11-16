@@ -10,6 +10,9 @@ rootfs_name="root-""$time_flag"".img"
 
 
 creat_dir(){
+    if [ -d "$chroot_path" ];then
+        rm -rf "$chroot_path"
+    fi
     mkdir -p "$chroot_path"
 }
 
