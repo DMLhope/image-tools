@@ -5,6 +5,15 @@ add_repo(){
   apt update
 }
 
+set_hosts(){
+  echo "192.168.1.85  mirror.feixian.software" >> /etc/hosts
+}
+
+clean_hosts(){
+  sed -i '/192.168.1.85/d' /etc/hosts
+
+}
+
 apt_install() {
   DEBIAN_FRONTEND="noninteractive" apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"  --allow-unauthenticated install "$@"
 }
@@ -33,9 +42,11 @@ add_user(){
 
 main(){
   add_repo
+  set_hosts
   install_pkg
   change_root_passwd
   add_user
+  clean_hosts
 }
 
 main
