@@ -60,6 +60,32 @@ EOF
   chmod +x /etc/rc.local
 }
 
+set_osrelease(){
+  cat > /etc/os-release <<EOF
+PRETTY_NAME="FXOS"
+NAME="FXOS"
+VERSION_ID="1"
+VERSION="1"
+VERSION_CODENAME=bookworm
+ID=fxos
+HOME_URL="https://feixianos.com"
+SUPPORT_URL="https://feixianos.com"
+BUG_REPORT_URL="https://feixianos.com"
+EOF
+  cat > /etc/lsb-release <<EOF
+DISTRIB_ID=fxos
+DISTRIB_RELEASE=1
+DISTRIB_CODENAME=bookworm
+DISTRIB_DESCRIPTION="FXOS"
+EOF
+  cat > /etc/debian_version <<EOF
+12.2
+EOF
+  cat > /etc/os-version <<EOF
+1.0
+EOF
+}
+
 set_motd(){
   cat > /etc/motd <<EOF
   
