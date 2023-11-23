@@ -47,7 +47,7 @@ set_hostname(){
 }
 
 set_rclocal(){
-  touch /.resize_down
+  touch /.resize_done
   cat > /etc/rc.local <<EOF
 #!/bin/bash -e
 # 检查标志文件是否存在
@@ -110,6 +110,7 @@ main(){
   update_ssh
   set_rclocal
   set_motd
+  set_osrelease
   # clean_hosts
 }
 

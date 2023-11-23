@@ -92,7 +92,7 @@ mk_rootfs_img(){
     rootfs_mnt="$rootfs_name"-mnt
     mkdir -p $rootfs_mnt
     mount "$rootfs_name" "$rootfs_mnt"
-    rsync -av "$chroot_path"/* "$rootfs_mnt"
+    rsync -av "$chroot_path"/ "$rootfs_mnt"
     umount "$rootfs_mnt"
     e2fsck -f "$rootfs_name"
     resize2fs "$rootfs_name"
