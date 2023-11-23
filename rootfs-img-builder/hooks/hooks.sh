@@ -1,18 +1,11 @@
 #!/usr/bin/env bash
+#hooks.sh
 
 add_repo(){
   echo "" >> /etc/apt/sources.list
   apt update
 }
 
-# set_hosts(){
-#   echo "192.168.1.85  mirror.feixian.software" >> /etc/hosts
-# }
-
-# clean_hosts(){
-#   sed -i '/192.168.1.85/d' /etc/hosts
-
-# }
 
 apt_install() {
   DEBIAN_FRONTEND="noninteractive" apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold"  --allow-unauthenticated install "$@"
@@ -30,17 +23,55 @@ install_pkg(){
 }
 
 
+update_ssh(){
+	if [ ! -f /etc/ssh/sshd_config ];then
+		echo "no ssh conf to update"
+		return 1
+	else
+		sed -i '/PermitRootLogin/d' /etc/ssh/sshd_config
+		echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
+	fi
+}
 
 change_root_passwd(){
   echo root:123 |chpasswd
 }
 
+
 add_user(){
-  useradd -m -G sudo -s  /bin/bash -p "$(openssl passwd -1 123)" fxos
+  useradd -m -G sudo -s  /bin/bash -p "$(openssl passwd -1 fxos)" fxos
 }
 
 set_hostname(){
   echo "fxos-pc" > /etc/hostname
+}
+
+set_rclocal(){
+  touch /.resize_down
+  cat > /etc/rc.local <<EOF
+#!/bin/bash -e
+# 检查标志文件是否存在
+if [ -f /.resize_done ]; then
+    resize2fs /dev/mmcblk0p3
+    rm -f /.resize_done
+fi
+exit 0
+EOF
+  chmod +x /etc/rc.local
+}
+
+set_motd(){
+  cat > /etc/motd <<EOF
+  
+  ███████╗██╗  ██╗ ██████╗ ███████╗
+  ██╔════╝╚██╗██╔╝██╔═══██╗██╔════╝
+  █████╗   ╚███╔╝ ██║   ██║███████╗
+  ██╔══╝   ██╔██╗ ██║   ██║╚════██║
+  ██║     ██╔╝ ██╗╚██████╔╝███████║
+  ╚═╝     ╚═╝  ╚═╝ ╚═════╝ ╚══════╝
+  Homepage:  https://feixianos.com
+
+EOF
 }
 
 main(){
@@ -50,6 +81,9 @@ main(){
   change_root_passwd
   add_user
   set_hostname
+  update_ssh
+  set_rclocal
+  set_motd
   # clean_hosts
 }
 
