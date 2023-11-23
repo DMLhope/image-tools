@@ -60,7 +60,7 @@ EOF
   chmod +x /etc/rc.local
 }
 
-set_osrelease(){
+set_osversion(){
   cat > /etc/os-release <<EOF
 PRETTY_NAME="FXOS"
 NAME="FXOS"
@@ -83,6 +83,12 @@ EOF
 EOF
   cat > /etc/os-version <<EOF
 1.0
+EOF
+  cat > /etc/issue <<EOF
+FXOS GNU/Linux 1.0 \n \l
+EOF
+  cat > /etc/issue.net <<EOF
+FXOS GNU/Linux 1.0
 EOF
 }
 
@@ -110,7 +116,7 @@ main(){
   update_ssh
   set_rclocal
   set_motd
-  set_osrelease
+  set_osversion
   # clean_hosts
 }
 
